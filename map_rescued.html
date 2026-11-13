@@ -351805,200 +351805,11 @@ document.addEventListener("DOMContentLoaded", function() {
 
 <script>
 // 1. Логика расчета вероятности
-function calcBiteProb(weather, moonPhase, tideTrend) {
-    let score = 50;
-    if (weather.pressure > 1010 && weather.pressure < 1020) score += 15;
-    else if (weather.pressure < 1005) score -= 10;
-    if (weather.wave > 0.5 && weather.wave < 1.5) score += 15;
-    else if (weather.wave > 2.5) score -= 15;
-    if (moonPhase < 0.1 || moonPhase > 0.9) score += 10;
-    else if (moonPhase > 0.4 && moonPhase < 0.6) score -= 5;
-    if (tideTrend === 'rising') score += 10;
-    else if (tideTrend === 'falling') score -= 5;
-    return Math.min(95, Math.max(5, score));
-}
-
-// 2. Функция открытия панели прогноза
-async function openForecast(lat, lon, name) {
-    const panel = document.getElementById('forecast-panel');
-    if (!panel) { alert("Панель прогноза не найдена!"); return; }
-    
-    document.getElementById('fc-title').innerText = '📊 ' + name;
-    document.getElementById('fc-content').innerHTML = '<p style="text-align:center;">⏳ Загрузка прогноза...</p>';
-    panel.classList.add('open');
-
-    try {
-        const wUrl = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&hourly=pressure_msl,sea_level_height_msl&daily=sunrise,sunset&timezone=auto`;
-        const mUrl = `https://marine-api.open-meteo.com/v1/marine?latitude=${lat}&longitude=${lon}&hourly=wave_height,sea_surface_temperature&timezone=auto`;
-        const [wResp, mResp] = await Promise.all([fetch(wUrl), fetch(mUrl)]);
-        const wData = await wResp.json();
-        const mData = await mResp.json();
-
-        let html = '';
-        const days = ['Сегодня', 'Завтра', 'Послезавтра'];
-        
-        let moon = { fraction: 0.5 };
-        if (typeof SunCalc !== 'undefined') {
-            moon = SunCalc.getMoonIllumination(new Date());
-        }
-        const moonPct = Math.round(moon.fraction * 100);
-        let moonName = moonPct > 90 ? 'Полнолуние' : moonPct < 10 ? 'Новолуние' : moonPct > 50 ? 'Убывающая' : 'Растущая';
-
-        for (let d = 0; d < 3; d++) {
-            const idx = d * 24 + 12;
-            const pres = wData.hourly.pressure_msl[idx] || 1013;
-            const wave = mData.hourly.wave_height[idx] || 1.0;
-            const temp = mData.hourly.sea_surface_temperature[idx] || 18;
-            const tideH = wData.hourly.sea_level_height_msl[idx] || 1.5;
-            const sunrise = wData.daily.sunrise[d].split('T')[1];
-            const sunset = wData.daily.sunset[d].split('T')[1];
-            
-            const tideTrend = tideH > 1.5 ? 'falling' : 'rising';
-            const prob = calcBiteProb({pressure: pres, wave: wave}, moon.fraction, tideTrend);
-            let probClass = prob > 70 ? 'high' : prob > 40 ? 'med' : 'low';
-
-            html += `<div class="fc-day">
-                <h3>${days[d]}</h3>
-                <div class="fc-row"><span>Давление</span><span>${pres.toFixed(0)} гПа</span></div>
-                <div class="fc-row"><span>Волна</span><span>${wave.toFixed(1)} м</span></div>
-                <div class="fc-row"><span>Темп. воды</span><span>${temp.toFixed(1)} °C</span></div>
-                <div class="fc-row"><span>Восход/Закат</span><span>${sunrise} / ${sunset}</span></div>
-                <div class="fc-row"><span>Луна</span><span>${moonName} (${moonPct}%)</span></div>
-                <div class="fc-prob ${probClass}">Шанс улова: ${prob}%</div>
-            </div>`;
-        }
-        document.getElementById('fc-content').innerHTML = html;
-    } catch (e) {
-        document.getElementById('fc-content').innerHTML = '<p style="color:red;">Ошибка загрузки данных: ' + e.message + '</p>';
-    }
-}
-
-// 3. Наблюдатель за картой (срабатывает после полной загрузки страницы)
-document.addEventListener('DOMContentLoaded', function() {
-    setTimeout(function() {
-        var mapInstance = window.map || (typeof map !== 'undefined' ? map : null);
-        if (mapInstance) {
-            // А) Отключение тумана при приближении
-            mapInstance.on('zoomend', function() {
-                var z = mapInstance.getZoom();
-                mapInstance.eachLayer(function(layer) {
-                    if (layer instanceof L.Polygon) {
-                        if (z >= 13) layer.setStyle({ fillOpacity: 0 });
-                        else if (z >= 11) layer.setStyle({ fillOpacity: 0.05 });
-                        else layer.setStyle({ fillOpacity: 0.2 });
-                    }
-                });
-            });
-            mapInstance.fire('zoomend'); // Применяем сразу при загрузке
-
-            // Б) Вставка кнопки прогноза в попапы
-            mapInstance.on('popupopen', function(e) {
-                setTimeout(function() {
-                    var container = e.popup.getElement();
-                    if (!container) return;
-                    var content = container.querySelector('.leaflet-popup-content');
-                    if (!content || content.querySelector('.forecast-btn')) return;
-                    
-                    var latlng = e.popup.getLatLng();
-                    var nameNode = content.querySelector('b');
-                    var name = nameNode ? nameNode.innerText.replace('🎣', '').trim() : 'Точка';
-                    
-                    var btn = document.createElement('button');
-                    btn.className = 'forecast-btn';
-                    btn.innerHTML = '📊 Прогноз на 3 дня';
-                    btn.onclick = function() { openForecast(latlng.lat, latlng.lng, name); };
-                    
-                    content.appendChild(btn);
-                }, 100); // Даем 100мс, чтобы другие скрипты отработали
-            });
-        }
-    }, 1000); // Ждем 1 секунду, чтобы карта точно инициализировалась
-});
-</script>
-
-
-
-
-
-
-
-
-
-
-
-
+// [CLEANUP] Removed Open-Meteo "??????? ?? 3 ???" and 7 dead copies of openForecast
 <script>
 const TIDE_API_KEY = "tc_live_62b1b90c1d8a157fbcfa359519cb96d8";
 
-async function openForecast(lat, lon, name) {
-    document.getElementById('fc-modal').classList.add('active');
-    document.getElementById('fc-title').innerText = '🌊 Приливы: ' + name;
-    document.getElementById('fc-body').innerHTML = '<p style="text-align:center;">⏳ Загрузка данных о приливах...</p>';
 
-    try {
-        // 1. Находим ближайшую станцию TideCheck
-        const stationResp = await fetch(`https://tidecheck.com/api/v1/nearest?lat=${lat}&lon=${lon}&key=${TIDE_API_KEY}`);
-        const stationData = await stationResp.json();
-        
-        if (!stationData || stationData.length === 0) throw new Error("Станция не найдена в этом районе");
-        const stationId = stationData[0].id;
-
-        // 2. Получаем прогноз приливов на 3 дня
-        const tideResp = await fetch(`https://tidecheck.com/api/v1/tides/${stationId}?days=3&key=${TIDE_API_KEY}`);
-        const tideData = await tideResp.json();
-
-        let html = '';
-        const days = ['Сегодня', 'Завтра', 'Послезавтра'];
-        
-        // Группируем экстремумы по дням
-        const tidesByDay = {};
-        tideData.extremes.forEach(ext => {
-            const date = ext.localDate;
-            if (!tidesByDay[date]) tidesByDay[date] = [];
-            tidesByDay[date].push(ext);
-        });
-
-        // Выводим таблицы
-        let dayCounter = 0;
-        for (const [date, extremes] of Object.entries(tidesByDay)) {
-            if (dayCounter >= 3) break;
-            html += `<div class="fc-day-card"><h3>${days[dayCounter]} - ${date}</h3>`;
-            html += '<table class="tide-table"><tr><th>Тип</th><th>Время</th><th>Высота</th></tr>';
-            
-            extremes.forEach(ext => {
-                const isHigh = ext.type === 'high';
-                const timeStr = ext.time ? ext.time.split('T')[1].substring(0,5) : '--:--';
-                html += `<tr>
-                    <td class="${isHigh ? 'tide-high' : 'tide-low'}">${isHigh ? '▲ Прилив' : '▼ Отлив'}</td>
-                    <td>${timeStr}</td>
-                    <td><b>${ext.height.toFixed(2)} м</b></td>
-                </tr>`;
-            });
-            html += '</table></div>';
-            dayCounter++;
-        }
-
-        // Добавляем информацию о луне и солнце (если API их возвращает)
-        if (tideData.dailyConditions) {
-            tideData.dailyConditions.slice(0, 3).forEach((day, i) => {
-                const moonPct = Math.round(day.moonIllumination * 100) || 0;
-                html += `<div class="fc-day-card" style="background:#fff; border-left:4px solid #007bff;">
-                    <h3>Луна и Солнце: ${days[i]}</h3>
-                    <div class="fc-grid">
-                        <div class="fc-item"><span>Фаза луны</span><strong>${day.moonPhase || '—'} (${moonPct}%)</strong></div>
-                        <div class="fc-item"><span>Восход</span><strong>${day.sunrise || '—'}</strong></div>
-                        <div class="fc-item"><span>Закат</span><strong>${day.sunset || '—'}</strong></div>
-                    </div>
-                </div>`;
-            });
-        }
-
-        document.getElementById('fc-body').innerHTML = html;
-
-    } catch (e) {
-        document.getElementById('fc-body').innerHTML = '<p style="color:red; text-align:center;">Ошибка: ' + e.message + '</p><p style="text-align:center; font-size:12px; color:#666;">Возможно, API-ключ не активирован или закончился лимит запросов.</p>';
-    }
-}
 
 // Надежный перехватчик кнопки (MutationObserver)
 document.addEventListener('DOMContentLoaded', function() {
@@ -352047,66 +351858,7 @@ document.addEventListener('DOMContentLoaded', function() {
 <script>
 const TIDE_API_KEY = "tc_live_62b1b90c1d8a157fbcfa359519cb96d8";
 
-async function openForecast(lat, lon, name) {
-    document.getElementById('fc-modal').classList.add('active');
-    document.getElementById('fc-title').innerText = '🌊 Приливы на 15 дней: ' + name;
-    document.getElementById('fc-body').innerHTML = '<p style="text-align:center;">⏳ Загрузка прогноза на 15 дней...</p>';
 
-    try {
-        const stationResp = await fetch(`https://tidecheck.com/api/v1/nearest?lat=${lat}&lon=${lon}&key=${TIDE_API_KEY}`);
-        const stationData = await stationResp.json();
-        
-        if (!stationData || stationData.length === 0) throw new Error("Станция не найдена в этом районе");
-        const stationId = stationData[0].id;
-
-        // Запрашиваем 15 дней
-        const tideResp = await fetch(`https://tidecheck.com/api/v1/tides/${stationId}?days=15&key=${TIDE_API_KEY}`);
-        const tideData = await tideResp.json();
-
-        let html = '';
-        
-        // Группируем по дням
-        const tidesByDay = {};
-        tideData.extremes.forEach(ext => {
-            const date = ext.localDate;
-            if (!tidesByDay[date]) tidesByDay[date] = [];
-            tidesByDay[date].push(ext);
-        });
-
-        let dayCounter = 1;
-        for (const [date, extremes] of Object.entries(tidesByDay)) {
-            const d = new Date(date);
-            const options = { weekday: 'short', day: 'numeric', month: 'short' };
-            const dateStr = d.toLocaleDateString('pt-PT', options);
-            
-            // Открываем первый день по умолчанию
-            const isOpen = dayCounter === 1 ? 'open' : '';
-
-            html += `<details class="fc-day" ${isOpen}>
-                <summary><span>📅 ${dateStr}</span> <span>▼</span></summary>
-                <div class="fc-day-content">
-                <table class="tide-table">
-                    <tr><th>Тип</th><th>Время</th><th>Высота</th></tr>`;
-            
-            extremes.forEach(ext => {
-                const isHigh = ext.type === 'high';
-                const timeStr = ext.time ? ext.time.split('T')[1].substring(0,5) : '--:--';
-                html += `<tr>
-                    <td class="${isHigh ? 'tide-high' : 'tide-low'}">${isHigh ? '▲ Прилив' : '▼ Отлив'}</td>
-                    <td><b>${timeStr}</b></td>
-                    <td>${ext.height.toFixed(2)} м</td>
-                </tr>`;
-            });
-            html += `</table></div></details>`;
-            dayCounter++;
-        }
-
-        document.getElementById('fc-body').innerHTML = html;
-
-    } catch (e) {
-        document.getElementById('fc-body').innerHTML = '<p style="color:red; text-align:center;">Ошибка: ' + e.message + '</p><p style="text-align:center; font-size:12px; color:#666;">Возможно, на бесплатном тарифе API доступно меньше дней, или превышен лимит.</p>';
-    }
-}
 
 // НАДЕЖНОЕ ВНЕДРЕНИЕ КНОПКИ ЧЕРЕЗ СОБЫТИЯ КАРТЫ
 window.addEventListener('load', function() {
@@ -352155,63 +351907,7 @@ window.addEventListener('load', function() {
 <script>
 const TIDE_API_KEY = "tc_live_62b1b90c1d8a157fbcfa359519cb96d8";
 
-async function openForecast(lat, lon, name) {
-    document.getElementById('fc-modal').classList.add('active');
-    document.getElementById('fc-title').innerText = '🌊 Приливы: ' + name;
-    document.getElementById('fc-body').innerHTML = '<p style="text-align:center;">⏳ Загрузка прогноза...</p>';
 
-    try {
-        const stationResp = await fetch(`https://tidecheck.com/api/v1/nearest?lat=${lat}&lon=${lon}&key=${TIDE_API_KEY}`);
-        const stationData = await stationResp.json();
-        
-        if (!stationData || stationData.length === 0) throw new Error("Станция не найдена в этом районе");
-        const stationId = stationData[0].id;
-
-        const tideResp = await fetch(`https://tidecheck.com/api/v1/tides/${stationId}?days=7&key=${TIDE_API_KEY}`);
-        const tideData = await tideResp.json();
-
-        let html = '';
-        
-        const tidesByDay = {};
-        tideData.extremes.forEach(ext => {
-            const date = ext.localDate;
-            if (!tidesByDay[date]) tidesByDay[date] = [];
-            tidesByDay[date].push(ext);
-        });
-
-        let dayCounter = 1;
-        for (const [date, extremes] of Object.entries(tidesByDay)) {
-            const d = new Date(date);
-            const options = { weekday: 'short', day: 'numeric', month: 'short' };
-            const dateStr = d.toLocaleDateString('ru-RU', options);
-            
-            const isOpen = dayCounter === 1 ? 'open' : '';
-
-            html += `<details class="fc-day" ${isOpen}>
-                <summary><span>📅 ${dateStr}</span> <span>▼</span></summary>
-                <div class="fc-day-content">
-                <table class="tide-table">
-                    <tr><th>Тип</th><th>Время</th><th>Высота</th></tr>`;
-            
-            extremes.forEach(ext => {
-                const isHigh = ext.type === 'high';
-                const timeStr = ext.time ? ext.time.split('T')[1].substring(0,5) : '--:--';
-                html += `<tr>
-                    <td class="${isHigh ? 'tide-high' : 'tide-low'}">${isHigh ? '▲ Прилив' : '▼ Отлив'}</td>
-                    <td><b>${timeStr}</b></td>
-                    <td>${ext.height.toFixed(2)} м</td>
-                </tr>`;
-            });
-            html += `</table></div></details>`;
-            dayCounter++;
-        }
-
-        document.getElementById('fc-body').innerHTML = html;
-
-    } catch (e) {
-        document.getElementById('fc-body').innerHTML = '<p style="color:red; text-align:center;">Ошибка: ' + e.message + '</p>';
-    }
-}
 
 // НАДЕЖНЫЙ НАБЛЮДАТЕЛЬ ЗА DOM (сработает всегда)
 document.addEventListener('DOMContentLoaded', function() {
@@ -352256,63 +351952,7 @@ document.addEventListener('DOMContentLoaded', function() {
 <script>
 const TIDE_API_KEY = "tc_live_62b1b90c1d8a157fbcfa359519cb96d8";
 
-async function openForecast(lat, lon, name) {
-    document.getElementById('fc-modal').classList.add('active');
-    document.getElementById('fc-title').innerText = '🌊 Приливы: ' + name;
-    document.getElementById('fc-body').innerHTML = '<p style="text-align:center;">⏳ Загрузка прогноза...</p>';
 
-    try {
-        const stationResp = await fetch(`https://tidecheck.com/api/v1/nearest?lat=${lat}&lon=${lon}&key=${TIDE_API_KEY}`);
-        const stationData = await stationResp.json();
-        
-        if (!stationData || stationData.length === 0) throw new Error("Станция не найдена в этом районе");
-        const stationId = stationData[0].id;
-
-        const tideResp = await fetch(`https://tidecheck.com/api/v1/tides/${stationId}?days=7&key=${TIDE_API_KEY}`);
-        const tideData = await tideResp.json();
-
-        let html = '';
-        
-        const tidesByDay = {};
-        tideData.extremes.forEach(ext => {
-            const date = ext.localDate;
-            if (!tidesByDay[date]) tidesByDay[date] = [];
-            tidesByDay[date].push(ext);
-        });
-
-        let dayCounter = 1;
-        for (const [date, extremes] of Object.entries(tidesByDay)) {
-            const d = new Date(date);
-            const options = { weekday: 'short', day: 'numeric', month: 'short' };
-            const dateStr = d.toLocaleDateString('ru-RU', options);
-            
-            const isOpen = dayCounter === 1 ? 'open' : '';
-
-            html += `<details class="fc-day" ${isOpen}>
-                <summary><span>📅 ${dateStr}</span> <span>▼</span></summary>
-                <div class="fc-day-content">
-                <table class="tide-table">
-                    <tr><th>Тип</th><th>Время</th><th>Высота</th></tr>`;
-            
-            extremes.forEach(ext => {
-                const isHigh = ext.type === 'high';
-                const timeStr = ext.time ? ext.time.split('T')[1].substring(0,5) : '--:--';
-                html += `<tr>
-                    <td class="${isHigh ? 'tide-high' : 'tide-low'}">${isHigh ? '▲ Прилив' : '▼ Отлив'}</td>
-                    <td><b>${timeStr}</b></td>
-                    <td>${ext.height.toFixed(2)} м</td>
-                </tr>`;
-            });
-            html += `</table></div></details>`;
-            dayCounter++;
-        }
-
-        document.getElementById('fc-body').innerHTML = html;
-
-    } catch (e) {
-        document.getElementById('fc-body').innerHTML = '<p style="color:red; text-align:center;">Ошибка API: ' + e.message + '</p>';
-    }
-}
 
 // УМНЫЙ ПЛАСТЫРЬ: Проверяем окошки каждые 300мс и вставляем кнопку, если её нет
 setInterval(function() {
@@ -352355,50 +351995,7 @@ setInterval(function() {
 <script>
 const TIDE_API_KEY = "tc_live_62b1b90c1d8a157fbcfa359519cb96d8";
 
-async function openForecast(lat, lon, name) {
-    document.getElementById('fc-modal').classList.add('active');
-    document.getElementById('fc-title').innerText = '🌊 Приливы: ' + name;
-    document.getElementById('fc-body').innerHTML = '<p style="text-align:center;">⏳ Загрузка прогноза...</p>';
 
-    try {
-        const stationResp = await fetch(`https://tidecheck.com/api/v1/nearest?lat=${lat}&lon=${lon}&key=${TIDE_API_KEY}`);
-        const stationData = await stationResp.json();
-        if (!stationData || stationData.length === 0) throw new Error("Станция не найдена");
-        const stationId = stationData[0].id;
-
-        const tideResp = await fetch(`https://tidecheck.com/api/v1/tides/${stationId}?days=7&key=${TIDE_API_KEY}`);
-        const tideData = await tideResp.json();
-
-        let html = '';
-        const tidesByDay = {};
-        tideData.extremes.forEach(ext => {
-            const date = ext.localDate;
-            if (!tidesByDay[date]) tidesByDay[date] = [];
-            tidesByDay[date].push(ext);
-        });
-
-        let dayCounter = 1;
-        for (const [date, extremes] of Object.entries(tidesByDay)) {
-            const d = new Date(date);
-            const options = { weekday: 'short', day: 'numeric', month: 'short' };
-            const dateStr = d.toLocaleDateString('ru-RU', options);
-            const isOpen = dayCounter === 1 ? 'open' : '';
-            html += `<details class="fc-day" ${isOpen}>
-                <summary><span>📅 ${dateStr}</span> <span>▼</span></summary>
-                <div class="fc-day-content"><table class="tide-table"><tr><th>Тип</th><th>Время</th><th>Высота</th></tr>`;
-            extremes.forEach(ext => {
-                const isHigh = ext.type === 'high';
-                const timeStr = ext.time ? ext.time.split('T')[1].substring(0,5) : '--:--';
-                html += `<tr><td class="${isHigh ? 'tide-high' : 'tide-low'}">${isHigh ? '▲ Прилив' : '▼ Отлив'}</td><td><b>${timeStr}</b></td><td>${ext.height.toFixed(2)} м</td></tr>`;
-            });
-            html += `</table></div></details>`;
-            dayCounter++;
-        }
-        document.getElementById('fc-body').innerHTML = html;
-    } catch (e) {
-        document.getElementById('fc-body').innerHTML = '<p style="color:red; text-align:center;">Ошибка API: ' + e.message + '</p>';
-    }
-}
 
 // ВНЕДРЕНИЕ В САМУ БИБЛИОТЕКУ LEAFLET (Самый надежный способ)
 window.addEventListener('load', function() {
@@ -352442,50 +352039,7 @@ window.addEventListener('load', function() {
 <script>
 const TIDE_API_KEY = "tc_live_62b1b90c1d8a157fbcfa359519cb96d8";
 
-async function openForecast(lat, lon, name) {
-    document.getElementById('fc-modal').classList.add('active');
-    document.getElementById('fc-title').innerText = '🌊 Приливы: ' + name;
-    document.getElementById('fc-body').innerHTML = '<p style="text-align:center;">⏳ Загрузка прогноза...</p>';
 
-    try {
-        const stationResp = await fetch(`https://tidecheck.com/api/v1/nearest?lat=${lat}&lon=${lon}&key=${TIDE_API_KEY}`);
-        const stationData = await stationResp.json();
-        if (!stationData || stationData.length === 0) throw new Error("Станция не найдена");
-        const stationId = stationData[0].id;
-
-        const tideResp = await fetch(`https://tidecheck.com/api/v1/tides/${stationId}?days=7&key=${TIDE_API_KEY}`);
-        const tideData = await tideResp.json();
-
-        let html = '';
-        const tidesByDay = {};
-        tideData.extremes.forEach(ext => {
-            const date = ext.localDate;
-            if (!tidesByDay[date]) tidesByDay[date] = [];
-            tidesByDay[date].push(ext);
-        });
-
-        let dayCounter = 1;
-        for (const [date, extremes] of Object.entries(tidesByDay)) {
-            const d = new Date(date);
-            const options = { weekday: 'short', day: 'numeric', month: 'short' };
-            const dateStr = d.toLocaleDateString('ru-RU', options);
-            const isOpen = dayCounter === 1 ? 'open' : '';
-            html += `<details class="fc-day" ${isOpen}>
-                <summary><span>📅 ${dateStr}</span> <span>▼</span></summary>
-                <div class="fc-day-content"><table class="tide-table"><tr><th>Тип</th><th>Время</th><th>Высота</th></tr>`;
-            extremes.forEach(ext => {
-                const isHigh = ext.type === 'high';
-                const timeStr = ext.time ? ext.time.split('T')[1].substring(0,5) : '--:--';
-                html += `<tr><td class="${isHigh ? 'tide-high' : 'tide-low'}">${isHigh ? '▲ Прилив' : '▼ Отлив'}</td><td><b>${timeStr}</b></td><td>${ext.height.toFixed(2)} м</td></tr>`;
-            });
-            html += `</table></div></details>`;
-            dayCounter++;
-        }
-        document.getElementById('fc-body').innerHTML = html;
-    } catch (e) {
-        document.getElementById('fc-body').innerHTML = '<p style="color:red; text-align:center;">Ошибка API: ' + e.message + '</p>';
-    }
-}
 
 // САМЫЙ НАДЕЖНЫЙ СПОСОБ: Перехватываем клик по маркеру через Leaflet
 window.addEventListener('load', function() {
