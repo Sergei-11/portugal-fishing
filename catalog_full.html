@@ -259,10 +259,11 @@ document.getElementById('lang-select').onchange = function() {
 };
 
 document.addEventListener('DOMContentLoaded', function() {
-    window.currentLang = 'pt';
+    var urlLang = new URLSearchParams(location.search).get('lang');
+    window.currentLang = urlLang || 'pt';
     var select = document.getElementById('lang-select');
-    if (select) select.value = 'pt';
-    var t = translations['pt'];
+    if (select) select.value = window.currentLang;
+    var t = translations[window.currentLang] || translations['pt'];
     document.getElementById('main-title').innerText = t.title;
     document.getElementById('search').placeholder = t.search;
     var __q = '';

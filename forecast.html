@@ -1015,5 +1015,119 @@ function getTempAnomaly(temps, currentHour) {
 }
 loadForecast();
 </script>
+
+<div style="position:fixed; top:80px; right:20px; z-index:9999; background:white; padding:10px; border-radius:8px; box-shadow:0 2px 10px rgba(0,0,0,0.2);">
+    <label style="font-weight:bold; font-size:12px;">&#1058;&#1080;&#1087; &#1084;&#1077;&#1089;&#1090;&#1072;:</label>
+    <select id="zone-filter" style="margin-left:5px; padding:5px; border-radius:4px; border:1px solid #ccc;" onchange="window.applyZoneFilter()">
+        <option value="">&#1051;&#1102;&#1073;&#1086;&#1077;</option>
+        <option value="sand">&#1055;&#1077;&#1089;&#1086;&#1082; / &#1055;&#1083;&#1103;&#1078;</option>
+        <option value="rock">&#1050;&#1072;&#1084;&#1085;&#1080; / &#1057;&#1082;&#1072;&#1083;&#1099;</option>
+        <option value="estuary">&#1059;&#1089;&#1090;&#1100;&#1077; &#1088;&#1077;&#1082;&#1080;</option>
+        <option value="deep">&#1043;&#1083;&#1091;&#1073;&#1080;&#1085;&#1072;</option>
+        <option value="open_sea">&#1054;&#1090;&#1082;&#1088;&#1099;&#1090;&#1086;&#1077; &#1084;&#1086;&#1088;&#1077;</option>
+    </select>
+</div>
+<script>
+
+
+
+window.applyZoneFilter = function() {
+    var zone = document.getElementById('zone-filter').value;
+    
+    // 1. ???????? ???????? ?? ??????? ?? 7 ???? (.species-details)
+    var dayCards = document.querySelectorAll('.species-details');
+    
+    // 2. ???????? ???????? ?? ???????? ?????? ??? ???????? (#top-fish-legend)
+    var topLegend = document.getElementById('top-fish-legend');
+    var topItems = topLegend ? Array.from(topLegend.children) : [];
+    
+    // ?????????? ??? ? ???? ??????
+    var allItems = Array.from(dayCards).concat(topItems);
+
+    allItems.forEach(function(item) {
+        // ????? HTML ??? ???????? ? ???????? ? ??????? ????????
+        var htmlText = item.innerHTML.toLowerCase(); 
+        var hide = false;
+
+        // ??????? ??????? ?????????? (?? ????????? ??? ?? ?????????????)
+        if (zone === 'estuary') {
+            if (htmlText.includes('garoupa') || htmlText.includes('pargo') || htmlText.includes('polvo') || htmlText.includes('linguado')) hide = true;
+        } 
+        else if (zone === 'rock') {
+            if (htmlText.includes('linguado') || htmlText.includes('tainha') || htmlText.includes('baila') || htmlText.includes('dourada')) hide = true;
+        }
+        else if (zone === 'sand') {
+            if (htmlText.includes('garoupa') || htmlText.includes('pargo') || htmlText.includes('polvo') || htmlText.includes('safio')) hide = true;
+        }
+        else if (zone === 'deep') {
+            if (htmlText.includes('sargo') || htmlText.includes('tainha') || htmlText.includes('baila')) hide = true;
+        }
+        else if (zone === 'open_sea') {
+            if (htmlText.includes('garoupa') || htmlText.includes('polvo') || htmlText.includes('linguado')) hide = true;
+        }
+
+        // ?????????
+        if (hide) {
+            item.style.display = 'none';
+        } else {
+            item.style.display = ''; 
+        }
+    });
+    
+    console.log('?????? ???????? ?? ???? 7 ????. ????:', zone);
+};
+
+
+
+</script>
+
+<script>
+window.addEventListener('load', function() {
+    var p = new URLSearchParams(window.location.search);
+    var latParam = p.get('lat');
+    var lonParam = p.get('lon');
+    if (!latParam || !lonParam) return; // ????????? ??? ? ?? ??????
+
+    var lat = parseFloat(latParam);
+    var lon = parseFloat(lonParam);
+    if (isNaN(lat) || isNaN(lon)) return;
+
+    // ????????? ????? ??? ?????????? (?????, ?????? ? ????????)
+    var riverMouths = [
+        { name: 'Tejo (Lisboa / Alg\u00e9s)', lat: 38.70, lon: -9.20, r: 0.08 },
+        { name: 'Sado (Set\u00fabal)',         lat: 38.49, lon: -8.85, r: 0.05 },
+        { name: 'Douro (Porto)',              lat: 41.14, lon: -8.68, r: 0.03 },
+        { name: 'Mondego (Figueira)',         lat: 40.15, lon: -8.87, r: 0.03 },
+        { name: 'Ria de Aveiro',              lat: 40.64, lon: -8.66, r: 0.05 },
+        { name: 'Guadiana (V.R.S.A.)',        lat: 37.18, lon: -7.41, r: 0.03 },
+        { name: 'Lima (Viana)',               lat: 41.69, lon: -8.83, r: 0.02 },
+        { name: 'C\u00e1vado (Esposende)',   lat: 41.53, lon: -8.78, r: 0.02 },
+        { name: 'Ria Formosa (Faro)',         lat: 37.00, lon: -7.85, r: 0.15 }
+    ];
+
+    var detectedZone = null, detectedName = null;
+    for (var i = 0; i < riverMouths.length; i++) {
+        var rm = riverMouths[i];
+        if (Math.abs(lat - rm.lat) < rm.r && Math.abs(lon - rm.lon) < rm.r) {
+            detectedZone = 'estuary';
+            detectedName = rm.name;
+            break;
+        }
+    }
+
+    if (detectedZone) {
+        var sel = document.getElementById('zone-filter');
+        if (sel) {
+            sel.value = detectedZone;
+            if (window.applyZoneFilter) window.applyZoneFilter();
+        }
+        var info = document.createElement('div');
+        info.style.cssText = 'position:fixed; top:130px; left:50%; transform:translateX(-50%); background:#17a2b8; color:white; padding:8px 16px; border-radius:20px; z-index:9998; font-size:13px; font-weight:bold; box-shadow:0 2px 8px rgba(0,0,0,0.2); opacity:1; transition:opacity 1s;';
+        info.textContent = '\ud83d\udccd \u0410\u0432\u0442\u043e: ' + detectedName;
+        document.body.appendChild(info);
+        setTimeout(function() { info.style.opacity = '0'; setTimeout(function(){ info.remove(); }, 1100); }, 6000);
+    }
+});
+</script>
 </body>
 </html>
