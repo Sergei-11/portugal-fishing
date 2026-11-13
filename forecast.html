@@ -230,7 +230,7 @@ function getMoonInfo() {
 }
 
 
-function getBaseScore(sp, pres, wind, windDeg, wave, temp, solunarBonus, wavePeriod, currVel, cloud, pTrend) {
+function getBaseScore(sp, pres, wind, windDeg, wave, temp, solunarBonus, wavePeriod, currVel, cloud, pTrend, tideScore, tideVelScore, tempAnomScore, hour) {
     let score = 50 + (solunarBonus || 0);
     const isNorth = (windDeg >= 315 || windDeg <= 45);
     const isSouth = (windDeg >= 135 && windDeg <= 225);
@@ -242,9 +242,9 @@ function getBaseScore(sp, pres, wind, windDeg, wave, temp, solunarBonus, wavePer
     if (pTrend) { if (pTrend.trend === 'falling') score += 9; else if (pTrend.trend === 'rising') score -= 7; }
     if (cloud !== undefined && cloud !== null) { if (cloud >= 40 && cloud <= 80) score += 4; else if (cloud < 10) score -= 4; }
     switch(sp) {
-        case 'Robalo': if (pres >= 1013 && pres <= 1017) score += 15; if (isSouth) score += 12; if (wind > 20 && isNorth) score -= 15; if (wave > 1 && wave < 2.5) score += 10; if (temp >= 12 && temp <= 20) score += 8; break;
-        case 'Sargo': if (temp >= 15 && temp <= 22) score += 10; if (isNorth && wind < 15) score += 5; if (wave > 0.8) score += 5; break;
-        case 'Dourada': if (temp >= 16 && temp <= 22) score += 12; if (wave < 1.2) score += 5; if (pres > 1005 && pres < 1020) score += 8; break;
+        case 'Robalo': if (pres >= 1013 && pres <= 1017) score += 15; if (isSouth) score += 12; if (wind > 20 && isNorth) score -= 15; if (wave > 1 && wave < 2.5) score += 10; if (temp >= 12 && temp <= 20) score += 8; if (hour !== undefined && ((hour >= 5 && hour <= 8) || (hour >= 18 && hour <= 21))) score += 15; break;
+        case 'Sargo': if (temp >= 15 && temp <= 22) score += 10; if (isNorth && wind < 15) score += 5; if (wave > 0.8) score += 5; if (tideScore !== undefined && tideScore > 0) score += 10; break;
+        case 'Dourada': if (temp >= 16 && temp <= 22) score += 12; if (wave < 1.2) score += 5; if (pres > 1005 && pres < 1020) score += 8; if (hour !== undefined && hour >= 7 && hour <= 11) score += 12; break;
         case 'Sardinha': if (temp > 18) score += 15; else score -= 15; if (wave > 1.5) score -= 20; if (wave < 1) score += 10; break;
         case 'Cavala': if (temp > 16) score += 10; if (wind > 10 && wind < 25) score += 5; break;
         case 'Carapau': if (temp > 15) score += 8; if (wave < 1.5) score += 5; break;
@@ -252,7 +252,7 @@ function getBaseScore(sp, pres, wind, windDeg, wave, temp, solunarBonus, wavePer
         case 'Lula': if (wave < 1) score += 10; else if (wave > 1.5) score -= 12; break;
         case 'Choco': if (wave < 1) score += 10; else if (wave > 1.5) score -= 10; break;
         case 'Safio': if (wind < 15) score += 5; if (pres < 1015) score += 5; break;
-        case 'Corvina': if (pres > 1010 && pres < 1020) score += 10; if (wave > 0.5 && wave < 1.8) score += 8; if (temp > 17) score += 8; break;
+        case 'Corvina': if (pres > 1010 && pres < 1020) score += 10; if (wave > 0.5 && wave < 1.8) score += 8; if (temp > 17) score += 8; if (hour !== undefined && (hour >= 22 || hour <= 4)) score += 12; if (tideScore !== undefined && tideScore < 0) score += 10; break;
         case 'Garoupa': if (pres > 1010) score += 5; if (wave < 1.5) score += 5; break;
         case 'Pargo': if (wave < 1.5) score += 5; if (pres > 1008) score += 5; break;
         case 'Linguado': if (wave < 1.2) score += 10; if (pres > 1005) score += 5; break;
@@ -268,8 +268,8 @@ function getBaseScore(sp, pres, wind, windDeg, wave, temp, solunarBonus, wavePer
     return Math.round(5 + normalized * 80);
 }
 
-function calcProb(sp, pres, wind, windDeg, wave, temp, solunarBonus, wavePeriod, currVel, cloud, pTrend) {
-    let score = getBaseScore(sp, pres, wind, windDeg, wave, temp, solunarBonus, wavePeriod, currVel, cloud, pTrend);
+function calcProb(sp, pres, wind, windDeg, wave, temp, solunarBonus, wavePeriod, currVel, cloud, pTrend, tideScore, tideVelScore, tempAnomScore, hour) {
+    let score = getBaseScore(sp, pres, wind, windDeg, wave, temp, solunarBonus, wavePeriod, currVel, cloud, pTrend, tideScore, tideVelScore, tempAnomScore, hour);
     
     // --- КОРМОВОЙ БОНУС (рекурсивный) ---
     const predators = ['Robalo', 'Dourada', 'Corvina', 'Pargo', 'Garoupa', 'Safio'];
@@ -277,7 +277,7 @@ function calcProb(sp, pres, wind, windDeg, wave, temp, solunarBonus, wavePeriod,
         const preySpecies = ['Sardinha', 'Carapau', 'Cavala'];
         let preyActive = false;
         for (let i = 0; i < preySpecies.length; i++) {
-            const preyScore = getBaseScore(preySpecies[i], pres, wind, windDeg, wave, temp, solunarBonus, wavePeriod, currVel, cloud, pTrend);
+            const preyScore = getBaseScore(preySpecies[i], pres, wind, windDeg, wave, temp, solunarBonus, wavePeriod, currVel, cloud, pTrend, tideScore, tideVelScore, tempAnomScore, hour);
             if (preyScore > 60) {
                 preyActive = true;
                 break;
@@ -923,7 +923,7 @@ function getTempAnomaly(temps, currentHour) {
                     const cVelH = mD.hourly.ocean_current_velocity ? mD.hourly.ocean_current_velocity[idx] : null;
                     const cloudH = wD.hourly.cloud_cover ? wD.hourly.cloud_cover[idx] : null;
                     const pTrH = getPressureTrend(wD.hourly.pressure_msl, idx);
-                    const probH = calcProb(x.sp, presH, windH, wDegH, waveH, tempH, hourlySolunar[h] || 0, wPerH, cVelH, cloudH, pTrH, tideType.score, tideVel.score, tempAnom.score);
+                    const probH = calcProb(x.sp, presH, windH, wDegH, waveH, tempH, hourlySolunar[h] || 0, wPerH, cVelH, cloudH, pTrH, tideType.score, tideVel.score, tempAnom.score, h);
                     hourlyData.push({ h: h, prob: probH });
                 }
                 // Находим лучший час и пиковые часы (в пределах 5% от максимума)
