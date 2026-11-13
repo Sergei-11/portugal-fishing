@@ -264,7 +264,7 @@ function getBaseScore(sp, pres, wind, windDeg, wave, temp, solunarBonus, wavePer
     }
     // Плавная кривая: "сырой" балл (обычно 40…120) → проценты (5…85)
     // Баланс: при хорошей погоде 75–85%, при идеале — не все 85%
-    const normalized = Math.max(0, Math.min(1, (score - 40) / 80));
+    const normalized = Math.max(0, Math.min(1, (score - 30) / 120));
     return Math.round(5 + normalized * 80);
 }
 
