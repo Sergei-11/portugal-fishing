@@ -1,0 +1,296 @@
+﻿<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guia de Peixes</title>
+    <style>
+        body { font-family: 'Segoe UI', Arial, sans-serif; background: #f4f9fc; margin: 0; padding: 20px; color: #333; }
+        h1 { text-align: center; color: #2c3e50; }
+        .controls { text-align: center; margin-bottom: 20px; }
+        input, select { padding: 10px; font-size: 16px; border: 1px solid #ccc; border-radius: 8px; margin: 5px; }
+        input { width: 60%; max-width: 400px; }
+        .fish-card { background: #fff; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 20px; padding: 20px; max-width: 800px; margin-left: auto; margin-right: auto; }
+        .fish-header { display: flex; align-items: center; margin-bottom: 15px; border-bottom: 1px solid #eee; padding-bottom: 15px; }
+        .fish-img-container img { width: 120px; height: 90px;  border-radius: 8px; margin-right: 20px; border: 1px solid #ddd; }
+        .fish-title h2 { margin: 0 0 5px 0; color: #0056b3; }
+        .fish-title small { color: #666; font-style: italic; font-size: 14px; }
+        details { background: #f8f9fa; border: 1px solid #e9ecef; border-radius: 8px; margin-bottom: 10px; }
+        summary { padding: 12px; font-weight: bold; cursor: pointer; color: #444; outline: none; border-radius: 8px; }
+        summary:hover { background: #e3f2fd; }
+        .details-content { padding: 15px; border-top: 1px solid #e9ecef; font-size: 14px; line-height: 1.6; background: #fff; border-radius: 0 0 8px 8px; }
+        .tip-box { background: #fffde7; padding: 12px; border-radius: 8px; border-left: 4px solid #fbc02d; font-style: italic; font-size: 14px; margin-top: 15px; }
+        .exp-pt { background: #e8f5e9; border-color: #c8e6c9; }
+        .exp-es { background: #fff3e0; border-color: #ffe0b2; }
+        .exp-jp { background: #e3f2fd; border-color: #bbdefb; }
+        .exp-guide { background: #f4f9fc; border-color: #cce5ff; }
+        
+        .zoomable { cursor: zoom-in; transition: transform 0.2s; display: inline-block; }
+        .zoomable:hover { transform: scale(1.02); }
+        #zoom-modal { display: none; position: fixed; z-index: 10000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.85); justify-content: center; align-items: center; cursor: zoom-out; }
+        #zoom-content { background: #fff; padding: 10px; border-radius: 12px; width: 95vw; height: 95vh; max-width: 1400px; overflow: hidden; position: relative; display: flex; align-items: center; justify-content: center; }
+        #zoom-svg-container { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; }
+        #zoom-svg-container svg, #zoom-svg-container img { width: 100%; height: 100%; max-width: 100%; max-height: 100%; object-fit: contain; }
+        .close-btn { position: absolute; top: 10px; right: 15px; font-size: 24px; font-weight: bold; color: #333; cursor: pointer; z-index: 10001; }
+    
+    
+    /* --- ИСПРАВЛЕНИЕ СЕТКИ ДЛЯ КАРТОЧЕК РЫБ (v2) --- */
+    .fish-card {
+        max-width: 1000px !important;
+        margin: 0 auto 20px auto !important;
+        padding: 20px !important;
+    }
+    .fish-header {
+        display: flex !important;
+        flex-direction: row !important;
+        align-items: center !important;
+        gap: 25px !important;
+        margin-bottom: 20px !important;
+        border-bottom: 1px solid #e0e0e0;
+        padding-bottom: 15px;
+    }
+    .fish-img-container {
+        flex-shrink: 0 !important;
+        width: 320px !important; 
+        height: 180px !important; /* Сделали чуть шире по пропорциям */
+        border-radius: 10px !important;
+        overflow: hidden !important;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.1) !important;
+        background-color: #f4f9fc !important; /* Нежный фон для пустых полей */
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+    }
+    .fish-img-container img {
+        width: 100% !important;
+        height: 100% !important;
+        object-fit: contain !important; /* Показываем фото ЦЕЛИКОМ, без обрезки */
+        display: block !important;
+    }
+    .fish-title {
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: center !important;
+    }
+    .fish-title h2 {
+        margin: 0 0 10px 0 !important;
+        font-size: 32px !important;
+        color: #0056b3 !important;
+    }
+    .fish-title small {
+        font-size: 18px !important;
+        color: #666 !important;
+        font-style: italic !important;
+    }
+
+    @media (max-width: 768px) {
+        .fish-header {
+            flex-direction: column !important;
+            align-items: flex-start !important;
+        }
+        .fish-img-container {
+            width: 100% !important;
+            height: 220px !important;
+        }
+        .fish-title h2 {
+            font-size: 26px !important;
+        }
+    }
+
+
+</style>
+</head>
+<body>
+
+    <h1 id="main-title">🐟 Guia de Peixes</h1>
+    
+    <div class="controls">
+        <select id="lang-select">
+            <option value="pt">🇵🇹 Português</option>
+            <option value="en">🇬🇧 English</option>
+            <option value="es">🇪🇸 Español</option>
+            <option value="ru">🇷🇺 Русский</option>
+        </select>
+        <br>
+        <input type="text" id="search" placeholder="Pesquisar..." oninput="filterFish()">
+    </div>
+
+    <div id="fish-list"></div>
+
+    <div id="zoom-modal" onclick="closeZoom()">
+        <div id="zoom-content" onclick="event.stopPropagation()">
+            <span class="close-btn" onclick="closeZoom()">×</span>
+            <div id="zoom-svg-container"></div>
+        </div>
+    </div>
+
+    <script src="fish_data.js"></script>
+    <script src="fish_guides.js"></script>
+    <script src="fish_guides_pt.js"></script>
+    
+
+    <script>
+var currentLang = 'pt';
+var translations = {
+    ru: { title: "🐟 Справочник рыб", search: "Поиск...", exp_pt: "Португальский опыт", exp_es: "Испанский опыт", exp_jp: "Японский опыт", rig_pt: "Схема PT", rig_es: "Схема ES", rig_jp: "Схема JP", zoom: "(Клик по картинке для увеличения)" },
+    pt: { title: "🐟 Guia de Peixes", search: "Pesquisar...", exp_pt: "Experiência Portuguesa", exp_es: "Experiência Espanhola", exp_jp: "Experiência Japonesa", rig_pt: "Esquema PT", rig_es: "Esquema ES", rig_jp: "Esquema JP", zoom: "(Clique na imagem para ampliar)" },
+    es: { title: "🐟 Guía de Peces", search: "Buscar...", exp_pt: "Experiencia Portuguesa", exp_es: "Experiencia Española", exp_jp: "Experiencia Japonesa", rig_pt: "Esquema PT", rig_es: "Esquema ES", rig_jp: "Esquema JP", zoom: "(Clic en la imagen para ampliar)" },
+    en: { title: "🐟 Fish Guide", search: "Search...", exp_pt: "Portuguese Experience", exp_es: "Spanish Experience", exp_jp: "Japanese Experience", rig_pt: "PT Rig", rig_es: "ES Rig", rig_jp: "JP Rig", zoom: "(Click the image to zoom)" }
+};
+
+var IMAGE_MAP = {
+    "sargo": { "jp": "Японский_опыт/jpfukase{lang}.png", "pt": "Португальский_опыт/ptboia{lang}.png", "es": "Испанский_опыт/esboia{lang}.png" },
+    "safia": { "jp": "Японский_опыт/jpfukase{lang}.png", "pt": "Португальский_опыт/ptboia{lang}.png", "es": "Испанский_опыт/esboia{lang}.png" },
+    "tainha": { "jp": "Японский_опыт/jpfukase{lang}.png", "pt": "Португальский_опыт/ptboia{lang}.png", "es": "Испанский_опыт/esboia{lang}.png" },
+    "boga": { "jp": "Японский_опыт/jpfukase{lang}.png", "pt": "Португальский_опыт/ptboia{lang}.png", "es": "Испанский_опыт/esboia{lang}.png" },
+    "robalo": { "jp": "Японский_опыт/jpseabass{lang}.png", "pt": "Португальский_опыт/ptchumbadinha{lang}.png", "es": "Испанский_опыт/eschumbadinha{lang}.png" },
+    "corvina": { "jp": "Японский_опыт/jpseabass{lang}.png", "pt": "Португальский_опыт/ptchumbadinha{lang}.png", "es": "Испанский_опыт/eschumbadinha{lang}.png" },
+    "dourada": { "jp": "Японский_опыт/jpnage{lang}.png", "pt": "Португальский_опыт/ptsurfcasting{lang}.png", "es": "Испанский_опыт/essurfcasting{lang}.png" },
+    "linguado": { "jp": "Японский_опыт/jpnage{lang}.png", "pt": "Португальский_опыт/ptsurfcasting{lang}.png", "es": "Испанский_опыт/essurfcasting{lang}.png" },
+    "salmonete": { "jp": "Японский_опыт/jpnage{lang}.png", "pt": "Португальский_опыт/ptsurfcasting{lang}.png", "es": "Испанский_опыт/essurfcasting{lang}.png" },
+    "safio": { "jp": "Японский_опыт/jpnage{lang}.png", "pt": "Португальский_опыт/ptsurfcasting{lang}.png", "es": "Испанский_опыт/essurfcasting{lang}.png" },
+    "xarroco": { "jp": "Японский_опыт/jpnage{lang}.png", "pt": "Португальский_опыт/ptsurfcasting{lang}.png", "es": "Испанский_опыт/essurfcasting{lang}.png" },
+    "lula": { "jp": "Японский_опыт/jpeging{lang}.png", "pt": "Португальский_опыт/pttoneira{lang}.png", "es": "Испанский_опыт/estoneira{lang}.png" },
+    "choco": { "jp": "Японский_опыт/jpeging{lang}.png", "pt": "Португальский_опыт/pttoneira{lang}.png", "es": "Испанский_опыт/estoneira{lang}.png" },
+    "polvo": { "jp": "Японский_опыт/jpeging{lang}.png", "pt": "Португальский_опыт/pttoneira{lang}.png", "es": "Испанский_опыт/estoneira{lang}.png" },
+    "sardinha": { "jp": "Японский_опыт/jpsabiki{lang}.png", "pt": "Португальский_опыт/ptmetralha{lang}.png", "es": "Испанский_опыт/esmetralha{lang}.png" },
+    "carapau": { "jp": "Японский_опыт/jpsabiki{lang}.png", "pt": "Португальский_опыт/ptmetralha{lang}.png", "es": "Испанский_опыт/esmetralha{lang}.png" },
+    "cavala": { "jp": "Японский_опыт/jpsabiki{lang}.png", "pt": "Португальский_опыт/ptmetralha{lang}.png", "es": "Испанский_опыт/esmetralha{lang}.png" },
+    "pargo": { "jp": "Японский_опыт/jptenya{lang}.png", "pt": "Португальский_опыт/ptembarcada{lang}.png", "es": "Испанский_опыт/esembarcada{lang}.png" },
+    "garoupa": { "jp": "Японский_опыт/jptenya{lang}.png", "pt": "Португальский_опыт/ptembarcada{lang}.png", "es": "Испанский_опыт/esembarcada{lang}.png" }
+};
+
+function zoomImage(element) {
+    var inner = element.querySelector('svg') || element.querySelector('img');
+    if (!inner) return;
+    var clone = inner.cloneNode(true);
+    clone.removeAttribute('style');
+    clone.removeAttribute('width');
+    clone.removeAttribute('height');
+    clone.style.width = '100%';
+    clone.style.height = '100%';
+    clone.style.maxWidth = 'none';
+    clone.style.maxHeight = 'none';
+    if (clone.tagName.toLowerCase() === 'svg') {
+        clone.setAttribute('preserveAspectRatio', 'xMidYMid meet');
+    }
+    var container = document.getElementById('zoom-svg-container');
+    container.innerHTML = '';
+    container.appendChild(clone);
+    document.getElementById('zoom-modal').style.display = 'flex';
+}
+
+function closeZoom() {
+    document.getElementById('zoom-modal').style.display = 'none';
+}
+
+function buildImgBlock(src, title, zoomText) {
+    if (!src) return '';
+    return '<br><br><details class="exp-guide" style="margin-top:15px; background:#f4f9fc; border:1px solid #cce5ff; border-radius:8px;">' +
+        '<summary style="cursor:pointer; font-weight:bold; color:#0056b3; padding:10px; background:#e6f2ff; border-radius:8px 8px 0 0;">🎣 ' + title + '</summary>' +
+        '<div class="details-content" style="padding:15px; text-align:center;">' +
+        '<div class="zoomable" onclick="zoomImage(this)" style="cursor:zoom-in;">' +
+        '<img src="images/' + src + '" style="width:100%; max-width:650px; border-radius:8px; display:block; margin:0 auto;" onerror="this.closest(\'details\').style.display=\'none\';">' +
+        '</div>' +
+        '<p style="margin-top:10px; font-size:13px; color:#555;">' + zoomText + '</p>' +
+        '</div></details>';
+}
+
+function renderFish(filterText) {
+    var listDiv = document.getElementById('fish-list');
+    if (!listDiv || !window.FISH_DATA) return;
+    listDiv.innerHTML = '';
+    var query = filterText ? filterText.toLowerCase().trim() : '';
+    var lang = window.currentLang || 'pt';
+    var t = translations[lang] || translations['pt'];
+
+    var allowedFish = ["sargo","safia","tainha","boga","robalo","corvina","dourada","linguado","salmonete","safio","xarroco","lula","choco","polvo","sardinha","carapau","cavala","pargo","garoupa"];
+    Object.keys(FISH_DATA).forEach(function(id) {
+        if (!allowedFish.includes(id)) return;
+        var f = FISH_DATA[id];
+        if (!f) return;
+        var name = f.name[lang] || f.name['ru'] || '—';
+        if (query && !name.toLowerCase().includes(query) && !f.name['ru'].toLowerCase().includes(query) && !f.name['pt'].toLowerCase().includes(query)) return;
+
+        var expData = window.FISH_EXP_MASTER && window.FISH_EXP_MASTER[id] ? window.FISH_EXP_MASTER[id] : null;
+        
+        var expPt = expData && expData.pt && expData.pt[lang] ? expData.pt[lang] : '<p>Sem dados</p>';
+        var expEs = expData && expData.es && expData.es[lang] ? expData.es[lang] : '<p>Sin datos</p>';
+        var expJp = expData && expData.jp && expData.jp[lang] ? expData.jp[lang] : '<p>Нет данных</p>';
+
+        var rgx = /<details class="exp-guide"[\s\S]*?<\/details>/g;
+        expPt = expPt.replace(rgx, '');
+        expEs = expEs.replace(rgx, '');
+        expJp = expJp.replace(rgx, '');
+
+        var imgData = IMAGE_MAP[id];
+        if (imgData) {
+            if (imgData.pt) expPt += buildImgBlock(imgData.pt.replace('{lang}', lang), t.rig_pt, t.zoom);
+            if (imgData.es) expEs += buildImgBlock(imgData.es.replace('{lang}', lang), t.rig_es, t.zoom);
+            if (imgData.jp) expJp += buildImgBlock(imgData.jp.replace('{lang}', lang), t.rig_jp, t.zoom);
+        }
+
+        var tip = f.tip ? (f.tip[lang] || f.tip['ru'] || '') : '';
+        var card = document.createElement('div');
+        card.className = 'fish-card';
+        card.innerHTML = '<div class="fish-header">' +
+            '<div class="fish-img-container"><a href="https://www.google.com/search?q='+f.name_lat+'&tbm=isch" target="_blank"><img src="images/Рыбы/'+id+'.jpg" onerror="this.src=\'https://placehold.co/160x120?text='+f.name['pt']+'\'" style="width:100%; height:100%;  border-radius:8px;"></a></div>' +
+            '<div class="fish-title"><h2>'+f.emoji+' '+name+'</h2><small>'+f.name_lat+'</small></div></div>' +
+            '<details class="exp-pt" open><summary>🇵🇹 '+ (t.exp_pt || 'Experiência Portuguesa') +'</summary><div class="details-content">'+expPt+'</div></details>' +
+            '<details class="exp-es"><summary>🇪🇸 '+ (t.exp_es || 'Experiência Espanhola') +'</summary><div class="details-content">'+expEs+'</div></details>' +
+            '<details class="exp-jp"><summary>🇯🇵 '+ (t.exp_jp || 'Experiência Japonesa') +'</summary><div class="details-content">'+expJp+'</div></details>' +
+            
+            '<div class="tip-box">💡 '+tip+'</div>';
+        
+        listDiv.appendChild(card);
+    });
+}
+
+function filterFish() {
+    renderFish(document.getElementById('search').value);
+}
+
+document.getElementById('lang-select').onchange = function() {
+    window.currentLang = this.value;
+    var t = translations[this.value] || translations['pt'];
+    document.getElementById('main-title').innerText = t.title;
+    document.getElementById('search').placeholder = t.search;
+    renderFish(document.getElementById('search').value);
+};
+
+document.addEventListener('DOMContentLoaded', function() {
+    window.currentLang = 'pt';
+    var select = document.getElementById('lang-select');
+    if (select) select.value = 'pt';
+    var t = translations['pt'];
+    document.getElementById('main-title').innerText = t.title;
+    document.getElementById('search').placeholder = t.search;
+    var __q = '';
+    try { __q = new URLSearchParams(location.search).get('q') || ''; } catch(e) {}
+    if (__q) { var __s = document.getElementById('search'); if (__s) __s.value = __q; }
+    renderFish(__q);
+    if (__q) {
+        setTimeout(function() {
+            var cards = document.querySelectorAll('.fish-card');
+            if (cards.length === 1) {
+                cards[0].scrollIntoView({ behavior: 'smooth', block: 'start' });
+                cards[0].style.outline = '3px solid #28a745';
+                cards[0].style.transition = 'outline 0.3s';
+            }
+        }, 250);
+    }
+});
+</script>
+
+<style>
+/* ЖЕСТКОЕ ПРАВИЛО ДЛЯ КАРТИНОК */
+.fish-img-container img {
+    object-fit: contain !important;
+    width: 100% !important;
+    height: 100% !important;
+}
+</style>
+
+<script src="fish_experiences_master_v3.js"></script>
+</body>
+</html>
