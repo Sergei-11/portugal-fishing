@@ -1,0 +1,9 @@
+﻿backups/
+backup*/
+backup_*/
+_ARCHIVE/
+_ROLLBACK_MAP/
+*.py
+*.zip
+*.pbf
+*.txt
