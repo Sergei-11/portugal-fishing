@@ -1,0 +1,575 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Cais do Gás",
+        "species": "robalo, corvina, linguado",
+        "source": "Google Maps"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -9.1471,
+          38.7056
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Poço do Bispo - Lisboa",
+        "species": "Robalo, Corvina",
+        "source": "Google Maps"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -9.1044,
+          38.7431
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Pontão da Matinha",
+        "species": "Robalo, Corvina, Linguado",
+        "source": "Google Maps"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -9.0982,
+          38.7495
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Norte da Ponte 25 Abril - Lisboa",
+        "species": "Robalos, Sargos",
+        "source": "Google Maps"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -9.1772,
+          38.6978
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Pilar da ponte 25 Abril",
+        "species": "Sargo, Corvina, Taínha",
+        "source": "Google Maps"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -9.1778,
+          38.6974
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Junto à Torre de Belém - Lisboa",
+        "species": "Robalo, Corvina",
+        "source": "Google Maps"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -9.216,
+          38.6916
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Parque das Nações - Lisboa",
+        "species": "Robalo, Corvina, Linguado",
+        "source": "Google Maps"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -9.0937,
+          38.7635
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Praia de Algés",
+        "species": "Safio",
+        "source": "Google Maps"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -9.2315,
+          38.6955
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Cruz Quebrada",
+        "species": "Robalo, Linguado",
+        "source": "Google Maps"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -9.2483,
+          38.6994
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Oeiras",
+        "species": "Sargo",
+        "source": "Google Maps"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -9.3106,
+          38.6967
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Oeiras - São Julião da Barra",
+        "species": "Sargo, Taínha",
+        "source": "Google Maps"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -9.3175,
+          38.6792
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Forte S.Julião Barra",
+        "species": "Sargos",
+        "source": "Google Maps"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -9.3211,
+          38.6756
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Praia velha, Paço de arcos",
+        "species": "Peixe-porco",
+        "source": "Google Maps"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -9.2936,
+          38.6925
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "São João da Talha",
+        "species": "Robalo, Corvina, Safio",
+        "source": "Google Maps"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -9.091,
+          38.8251
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "St. Iria frente ao mouchão",
+        "species": "Fataça, Taínha",
+        "source": "Google Maps"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -9.076,
+          38.8475
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Cais Ginjal - Almada",
+        "species": "Robalo, sargo, linguado",
+        "source": "Google Maps"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -9.1585,
+          38.6853
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Almada",
+        "species": "Robalo, Sargo, Dourada, Linguado",
+        "source": "Google Maps"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -9.1713,
+          38.6786
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Arialva",
+        "species": "Bailas, carapaus",
+        "source": "Google Maps"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -9.168,
+          38.6865
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Almada - Foz do Tejo",
+        "species": "sargo",
+        "source": "Google Maps"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -9.205,
+          38.684
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Terminal Trafaria",
+        "species": "Sargo, Corvina",
+        "source": "Google Maps"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -9.2319,
+          38.6738
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "TRAFARIA",
+        "species": "Surfcasting",
+        "source": "Google Maps"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -9.2307,
+          38.6732
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Cova do Vapor",
+        "species": "Linguado, Sargo, Dourada, Robalo",
+        "source": "Google Maps"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -9.2471,
+          38.6658
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Costa da Caparica",
+        "species": "Bóia",
+        "source": "Google Maps"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -9.2384,
+          38.6432
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Pontões Costa da Caparica",
+        "species": "Robalo, Sargo",
+        "source": "Google Maps"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -9.2415,
+          38.6455
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Praia de São João",
+        "species": "Robalo, Sargos, Linguado",
+        "source": "Google Maps"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -9.2452,
+          38.6538
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Pontão da Praia de Nívea - C. Caparica",
+        "species": "Sargos, Robalos",
+        "source": "Google Maps"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -9.2395,
+          38.6418
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Praia da Fonte da Telha",
+        "species": "Robalo",
+        "source": "Google Maps"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -9.1932,
+          38.567
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Seixal",
+        "species": "sargo, choupa robalo corvina",
+        "source": "Google Maps"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -9.1034,
+          38.6434
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Cais da Associação - Seixal",
+        "species": "Sarguetas",
+        "source": "Google Maps"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -9.1051,
+          38.6441
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Pontão do Barreiro, Seixal",
+        "species": "Robalo, Corvina, Douradas, Linguados",
+        "source": "Google Maps"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -9.091,
+          38.642
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Barreiro - Foz do Tejo",
+        "species": "Robalo, linguado, corvina",
+        "source": "Google Maps"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -9.078,
+          38.665
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Praínha do Barreiro",
+        "species": "Corvina, Robalo, Linguado",
+        "source": "Google Maps"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -9.0838,
+          38.6631
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Lavradio",
+        "species": "Robalo, linguado, corvina(rabetas)",
+        "source": "Google Maps"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -9.0435,
+          38.6592
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Lavradio - Foz do Tejo",
+        "species": "Robalo, linguado, corvina. douradas",
+        "source": "Google Maps"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -9.034,
+          38.6685
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Pontão Seca do Bacalhau - Palhais",
+        "species": "Enguia",
+        "source": "Google Maps"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -9.0195,
+          38.6515
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Montijo - Rio Tejo",
+        "species": "Linguado, Enguia",
+        "source": "Google Maps"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -8.9792,
+          38.7065
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Cais da Base Aérea 6 - Montijo",
+        "species": "Corvina",
+        "source": "Google Maps"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -8.995,
+          38.7205
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Alcochete",
+        "species": "Corvina",
+        "source": "Google Maps"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -8.9615,
+          38.7562
+        ]
+      }
+    }
+  ]
+}

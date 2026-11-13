@@ -1,0 +1,1014 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Прогноз для рыбалки</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/suncalc/1.9.0/suncalc.min.js"></script>
+<style>
+:root { --primary: #007bff; --bg: #eef2f5; --card-bg: #fff; --text: #2c3e50; --rising: #28a745; --falling: #dc3545; }
+* { box-sizing: border-box; }
+body { font-family: 'Segoe UI', Arial, sans-serif; background: var(--bg); padding: 15px; margin: 0; color: var(--text); }
+.container { max-width: 1100px; margin: auto; }
+.lang-switcher { display: flex; gap: 8px; justify-content: center; margin-bottom: 15px; flex-wrap: wrap; }
+.lang-switcher button { padding: 6px 14px; border: 1px solid #ccc; border-radius: 20px; background: #fff; cursor: pointer; font-weight: bold; font-size: 13px; }
+.lang-switcher button:hover { background: #e3f2fd; }
+.lang-switcher button.active { background: #2c3e50; color: white; border-color: #2c3e50; }
+h1 { text-align: center; font-size: 22px; margin: 0 0 20px 0; }
+.current-status { background: var(--card-bg); border-radius: 16px; padding: 20px; margin-bottom: 25px; box-shadow: 0 8px 25px rgba(0,0,0,0.08); }
+.chart-wrapper { width: 100%; margin-bottom: 15px; overflow-x: auto; background: linear-gradient(135deg, #fafbfc, #f0f6fc); border-radius: 12px; padding: 10px; }
+#tide-chart { width: 100%; min-width: 500px; display: block; }
+.status-box { text-align: center; margin-bottom: 15px; }
+.status-action { font-size: 22px; font-weight: 900; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 5px; }
+.status-target { font-size: 15px; color: #444; background: #f8f9fa; padding: 10px; border-radius: 8px; display: inline-block; border: 1px solid #eee; }
+.mini-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; max-width: 600px; margin: 0 auto; }
+.mini-item { background: #fff; padding: 10px; border-radius: 8px; text-align: center; border: 1px solid #eee; }
+.mini-label { font-size: 11px; color: #888; text-transform: uppercase; margin-bottom: 4px; }
+.mini-value { font-size: 18px; font-weight: bold; color: var(--text); }
+.day-card { background: var(--card-bg); margin-bottom: 15px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); overflow: hidden; }
+.day-summary { padding: 16px 20px; font-weight: bold; cursor: pointer; background: #f8f9fa; list-style: none; display: flex; justify-content: space-between; align-items: center; font-size: 16px; }
+.day-summary::-webkit-details-marker { display: none; }
+details[open] .day-summary { border-bottom: 1px solid #e9ecef; background: #e3f2fd; color: #0d47a1; }
+.day-content { padding: 20px; }
+.weather-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 20px; }
+.w-item { background: #f8f9fa; padding: 12px; border-radius: 8px; border-left: 4px solid var(--primary); }
+.w-label { font-size: 12px; color: #666; text-transform: uppercase; }
+.w-value { font-size: 17px; font-weight: bold; margin-top: 4px; }
+.tide-summary-line { background: #e9ecef; padding: 12px; border-radius: 8px; font-size: 14px; margin-bottom: 15px; text-align: center; line-height: 1.6; }
+.solunar-block { background: linear-gradient(135deg, #e3f2fd, #f3e5f5); padding: 15px; border-radius: 10px; margin-bottom: 15px; }
+.solunar-title { font-weight: bold; color: #0d47a1; margin-bottom: 10px; border-bottom: 1px solid #90caf9; padding-bottom: 5px; }
+.solunar-block ul { margin: 0; padding-left: 20px; font-size: 13px; line-height: 1.7; }
+table { width: 100%; border-collapse: collapse; font-size: 14px; margin-bottom: 15px; }
+th, td { border: 1px solid #dee2e6; padding: 8px; text-align: center; }
+th { background: #f1f3f5; color: #495057; }
+.tide-high { color: var(--rising); font-weight: bold; }
+.tide-low { color: var(--falling); font-weight: bold; }
+.prob-box { background: #f8f9fa; border-radius: 8px; padding: 15px; margin-top: 15px; }
+.prob-title { font-size: 15px; font-weight: bold; color: #2c3e50; margin-bottom: 10px; text-align: center; border-bottom: 1px solid #dee2e6; padding-bottom: 5px; }
+.species-item { display: flex; justify-content: space-between; align-items: center; background: #fff; padding: 8px 12px; border-radius: 6px; border: 1px solid #e9ecef; margin-bottom: 6px; }
+.species-link { font-weight: bold; color: #2c3e50; text-decoration: none; border-bottom: 1px dashed #007bff; }
+.species-link:hover { color: #007bff; border-bottom: 1px solid #007bff; }
+.species-prob { font-weight: bold; color: #28a745; }
+.species-prob.low { color: #ffc107; }
+.species-prob.verylow { color: #dc3545; }
+#loading { text-align: center; color: #666; font-size: 18px; padding: 40px; }
+
+@media (max-width: 900px) {
+    .container { padding: 0 10px; }
+    .weather-grid { grid-template-columns: 1fr 1fr; }
+    .mini-grid { max-width: 100%; }
+}
+@media (max-width: 600px) {
+    .weather-grid { grid-template-columns: 1fr; }
+}
+
+.species-details summary::-webkit-details-marker { display: none; }
+.species-details summary { list-style: none; }
+.species-details[open] summary { background: #e3f2fd !important; }
+.species-details summary:hover { background: #f0f6fc !important; }
+.hourly-row { display: flex; justify-content: space-between; padding: 3px 10px; font-size: 12px; border-bottom: 1px solid #f0f0f0; }
+.hourly-row.night { opacity: 0.45; }
+.hourly-row.best { background: #28a745; color: #fff; font-weight: bold; border-radius: 4px; }
+.hourly-row.best .hour-name, .hourly-row.best .hour-prob { color: #fff !important; }
+.hourly-row.peak { background: #d4edda; font-weight: bold; border-radius: 4px; }
+.hourly-row.peak .hour-prob { color: #155724 !important; }
+.hourly-row .hour-name { color: #555; }
+.hourly-row .hour-prob { font-weight: bold; color: #2c3e50; }
+</style>
+
+</head>
+<body>
+<div class="container">
+    <div class="lang-switcher">
+        <button data-lang="ru">🇷🇺 Русский</button>
+        <button data-lang="pt">🇵🇹 Português</button>
+        <button data-lang="es">🇪🇸 Español</button>
+        <button data-lang="en">🇬🇧 English</button>
+    </div>
+    <h1 id="title">🌊 Загрузка...</h1>
+    <div id="loading">⏳ Загрузка...</div>
+    <div class="current-status" id="current-status" style="display:none;">
+        <div class="chart-wrapper">
+            <svg id="tide-chart" viewBox="0 0 1000 450"></svg>
+            </div>
+            <div id="top-fish-legend" style="text-align:center; margin-bottom:15px;"></div>
+            <div style="display:none;">
+        </div>
+        <div style="text-align:center; margin-bottom:15px; font-size:13px; color:#666; padding:8px; background:#f8f9fa; border-radius:8px;"><span style="color:#28a745; font-size:16px;">●</span> Прилив &nbsp;&nbsp; <span style="color:#dc3545; font-size:16px;">●</span> Отлив &nbsp;&nbsp; <span style="color:#e74c3c; font-size:14px;">▬▬</span> Сейчас &nbsp;&nbsp; <span style="color:#28a745; font-size:14px;">▬</span> Прибывает &nbsp; <span style="color:#dc3545; font-size:14px;">▬</span> Убывает</div>
+        <div class="status-box">
+            <div id="status-action" class="status-action">-</div>
+            <div id="status-target" class="status-target">-</div>
+        </div>
+        <div class="mini-grid">
+            <div class="mini-item"><div class="mini-label" id="lbl-wind">Ветер</div><div class="mini-value" id="curr-wind">-</div></div>
+            <div class="mini-item"><div class="mini-label" id="lbl-wave">Волна</div><div class="mini-value" id="curr-wave">-</div></div>
+        </div>
+    </div>
+    <div id="content"></div>
+</div>
+
+<script>
+const T = {
+    ru: { title: "📊 Прогноз: ", loading: "⏳ Загрузка...", waterRising: "ВОДА ПРИБЫВАЕТ", waterFalling: "ВОДА УБЫВАЕТ", highTide: "ПРИЛИВ", lowTide: "ОТЛИВ", goesTo: "Идет к:", through: "через", hour: "ч", min: "мин", wind: "Ветер", wave: "Волна", pressure: "Давление", waterTemp: "Темп. воды", current: "Течение", cloudCover: "Облачность", wavePeriod: "Период волны", pressureTrend: "Тренд давления", highTideShort: "Прилив", lowTideShort: "Отлив", tideHigh: "▲ Прилив", tideLow: "▼ Отлив", tidesChrono: "Хронология дня:", type: "Тип", time: "Время", height: "Высота", noData: "Нет данных", noFish: "Нет рыб с высокой вероятностью", error: "Ошибка: ", now: "Сейчас", winds: ["Северный (С)","Северо-восточный (СВ)","Восточный (В)","Юго-восточный (ЮВ)","Южный (Ю)","Юго-западный (ЮЗ)","Западный (З)","Северо-западный (СЗ)"], weekdays: ["воскресенье","понедельник","вторник","среда","четверг","пятница","суббота"], months: ["янв","фев","мар","апр","мая","июн","июл","авг","сен","окт","ноя","дек"], rise: "Восход луны", set: "Заход луны", transit: "Транзит луны", moon: "Луна", bestHours: "Соланарная активность и лучшие часы", major: "MAJOR", minor: "minor", topFish: "🐟 Топ-8 рыб (соланар + погода)" },
+    pt: { title: "📊 Previsão: ", loading: "⏳ A carregar...", waterRising: "ÁGUA A SUBIR", waterFalling: "ÁGUA A DESCER", highTide: "PREIA-MAR", lowTide: "BAIXA-MAR", goesTo: "Vai para:", through: "em", hour: "h", min: "min", wind: "Vento", wave: "Onda", pressure: "Pressão", waterTemp: "Temp. água", current: "Corrente", cloudCover: "Nebulosidade", wavePeriod: "Período onda", pressureTrend: "Tendência", highTideShort: "Preia-mar", lowTideShort: "Baixa-mar", tideHigh: "▲ Preia-mar", tideLow: "▼ Baixa-mar", tidesChrono: "Cronologia do dia:", type: "Tipo", time: "Hora", height: "Altura", noData: "Sem dados", noFish: "Sem peixes com alta probabilidade", error: "Erro: ", now: "Agora", winds: ["Norte (N)","Nordeste (NE)","Leste (E)","Sudeste (SE)","Sul (S)","Sudoeste (SW)","Oeste (W)","Noroeste (NW)"], weekdays: ["domingo","segunda","terça","quarta","quinta","sexta","sábado"], months: ["jan","fev","mar","abr","mai","jun","jul","ago","set","out","nov","dez"], rise: "Nascer lua", set: "Pôr lua", transit: "Trânsito lua", moon: "Lua", bestHours: "Atividade solar e melhores horas", major: "MAJOR", minor: "minor", topFish: "🐟 Top-8 peixes (solar + clima)" },
+    es: { title: "📊 Pronóstico: ", loading: "⏳ Cargando...", waterRising: "AGUA SUBIENDO", waterFalling: "AGUA BAJANDO", highTide: "PLEAMAR", lowTide: "BAJAMAR", goesTo: "Va hacia:", through: "en", hour: "h", min: "min", wind: "Viento", wave: "Oleaje", pressure: "Presión", waterTemp: "Temp. agua", current: "Corriente", cloudCover: "Nubosidad", wavePeriod: "Período oleaje", pressureTrend: "Tendencia", highTideShort: "Pleamar", lowTideShort: "Bajamar", tideHigh: "▲ Pleamar", tideLow: "▼ Bajamar", tidesChrono: "Cronología del día:", type: "Tipo", time: "Hora", height: "Altura", noData: "Sin datos", noFish: "Sin peces con alta probabilidad", error: "Error: ", now: "Ahora", winds: ["Norte (N)","Nordeste (NE)","Este (E)","Sudeste (SE)","Sur (S)","Suroeste (SW)","Oeste (W)","Noroeste (NW)"], weekdays: ["domingo","lunes","martes","miércoles","jueves","viernes","sábado"], months: ["ene","feb","mar","abr","may","jun","jul","ago","sep","oct","nov","dic"], rise: "Salida luna", set: "Puesta luna", transit: "Tránsito luna", moon: "Luna", bestHours: "Actividad solar y mejores horas", major: "MAJOR", minor: "minor", topFish: "🐟 Top-8 peces (solar + clima)" },
+    en: { title: "📊 Forecast: ", loading: "⏳ Loading...", waterRising: "WATER RISING", waterFalling: "WATER FALLING", highTide: "HIGH TIDE", lowTide: "LOW TIDE", goesTo: "Going to:", through: "in", hour: "h", min: "min", wind: "Wind", wave: "Swell", pressure: "Pressure", waterTemp: "Water temp", current: "Current", cloudCover: "Cloud cover", wavePeriod: "Wave period", pressureTrend: "Pressure trend", highTideShort: "High tide", lowTideShort: "Low tide", tideHigh: "▲ High tide", tideLow: "▼ Low tide", tidesChrono: "Day chronology:", type: "Type", time: "Time", height: "Height", noData: "No data", noFish: "No fish with high probability", error: "Error: ", now: "Now", winds: ["North (N)","Northeast (NE)","East (E)","Southeast (SE)","South (S)","Southwest (SW)","West (W)","Northwest (NW)"], weekdays: ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"], months: ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"], rise: "Moonrise", set: "Moonset", transit: "Moon transit", moon: "Moon", bestHours: "Solunar activity & best hours", major: "MAJOR", minor: "minor", topFish: "🐟 Top-8 fish (solunar + weather)" }
+};
+
+const urlParams = new URLSearchParams(window.location.search);
+const lat = parseFloat(urlParams.get('lat')) || 38.7;
+const lon = parseFloat(urlParams.get('lon')) || -9.1;
+const name = urlParams.get('name') || 'Лиссабон';
+let currentLang = urlParams.get('lang') || 'ru';
+if (!T[currentLang]) currentLang = 'ru';
+const tr = T[currentLang];
+
+document.getElementById('title').innerText = tr.title + name;
+document.getElementById('loading').innerText = tr.loading;
+document.getElementById('lbl-wind').innerText = tr.wind;
+document.getElementById('lbl-wave').innerText = tr.wave;
+
+document.querySelectorAll('.lang-switcher button').forEach(function(btn) {
+    if (btn.getAttribute('data-lang') === currentLang) btn.classList.add('active');
+    btn.addEventListener('click', function() {
+        var u = new URL(window.location.href);
+        u.searchParams.set('lang', this.getAttribute('data-lang'));
+        window.location.href = u.toString();
+    });
+});
+
+function getWindDirection(deg) { return tr.winds[Math.round(deg / 45) % 8]; }
+
+
+
+
+function getWaveDanger(wave) {
+    if (wave === null || wave === undefined || isNaN(wave)) {
+        return { color: '#666', bg: '#f8f9fa', icon: '', label: '—' };
+    }
+    if (wave < 0.8) return { color: '#28a745', bg: '#d4edda', icon: '🟢', label: 'спокойно' };
+    if (wave < 1.5) return { color: '#856404', bg: '#fff3cd', icon: '🟡', label: 'умеренно' };
+    if (wave < 2.5) return { color: '#856404', bg: '#ffe5b4', icon: '🟠', label: 'сильно' };
+    return { color: '#721c24', bg: '#f8d7da', icon: '🔴', label: 'опасно' };
+}
+
+function getPressureTrend(pArr, idx) {
+    if (idx < 6) return { trend: 'stable', diff: 0, label: '→' };
+    const now = pArr[idx] || 1013, past = pArr[idx - 6] || 1013;
+    const diff = now - past;
+    if (diff < -2.5) return { trend: 'falling', diff: diff, label: '↓' };
+    if (diff > 2.5) return { trend: 'rising', diff: diff, label: '↑' };
+    return { trend: 'stable', diff: diff, label: '→' };
+}
+
+function getSolunarPeriods(date) {
+    const dayStart = new Date(date); dayStart.setHours(0,0,0,0);
+    const periods = [];
+    
+    // Восход и заход луны (minor)
+    const mt = SunCalc.getMoonTimes(dayStart, lat, lon);
+    if (mt.rise) periods.push({ type: 'minor', start: mt.rise, label: tr.rise });
+    if (mt.set) periods.push({ type: 'minor', start: mt.set, label: tr.set });
+    
+    // Транзит луны (major) — ищем момент МАКСИМАЛЬНОЙ высоты за сутки
+    let maxAlt = -Infinity, transitTime = null;
+    for (let min = 0; min < 24*60; min += 10) {
+        const t = new Date(dayStart); t.setMinutes(min);
+        const pos = SunCalc.getMoonPosition(t, lat, lon);
+        if (pos.altitude > maxAlt) { maxAlt = pos.altitude; transitTime = t; }
+    }
+    if (transitTime && maxAlt > 0) {
+        periods.push({ type: 'major', start: transitTime, label: tr.transit });
+    }
+    
+    return periods;
+}
+
+// Оценка дня по соланару (⭐⭐⭐ / ⭐⭐ / ⭐)
+function getSolunarDayQuality(periods) {
+    // Считаем: сколько major/minor попадает в "дневное" время 5:00–22:00
+    let score = 0;
+    periods.forEach(p => {
+        const h = p.start.getHours();
+        if (h >= 5 && h <= 22) {
+            score += (p.type === 'major') ? 3 : 1;
+        }
+    });
+    if (score >= 5) return { stars: '⭐⭐⭐', label: 'Высокая', color: '#28a745' };
+    if (score >= 3) return { stars: '⭐⭐', label: 'Средняя', color: '#ffc107' };
+    return { stars: '⭐', label: 'Низкая', color: '#dc3545' };
+}
+
+// Формат "15:52–17:52" для окна
+function formatWindow(p) {
+    const pad = n => String(n).padStart(2, '0');
+    const dur = p.type === 'major' ? 2*60 : 60; // minutes
+    const startMin = p.start.getHours()*60 + p.start.getMinutes();
+    const endMin = startMin + dur;
+    const endH = Math.floor(endMin/60) % 24;
+    const endM = endMin % 60;
+    return `${pad(p.start.getHours())}:${pad(p.start.getMinutes())}–${pad(endH)}:${pad(endM)}`;
+}
+
+function getSolunarScore(periods, currentTime) {
+    for (const p of periods) {
+        const diff = Math.abs(currentTime - p.start) / (1000 * 60);
+        if (p.type === 'major' && diff < 120) return { score: 30, label: p.label };
+        if (p.type === 'minor' && diff < 60) return { score: 15, label: p.label };
+    }
+    return { score: 0, label: '' };
+}
+
+function getMoonInfo() {
+    const m = SunCalc.getMoonIllumination(new Date());
+    const pct = Math.round(m.fraction * 100);
+    let n = 'Растущая';
+    if (pct > 90) n = 'Полнолуние'; else if (pct < 10) n = 'Новолуние';
+    else if (m.phase < 0.25) n = 'Растущая'; else if (m.phase < 0.5) n = '1-я четверть';
+    else if (m.phase < 0.75) n = 'Убывающая'; else n = 'Последняя четверть';
+    return { pct, name: n };
+}
+
+
+function getBaseScore(sp, pres, wind, windDeg, wave, temp, solunarBonus, wavePeriod, currVel, cloud, pTrend) {
+    let score = 50 + (solunarBonus || 0);
+    const isNorth = (windDeg >= 315 || windDeg <= 45);
+    const isSouth = (windDeg >= 135 && windDeg <= 225);
+    if (pres >= 1010 && pres <= 1020) score += 7; else if (pres < 1005 || pres > 1025) score -= 8;
+    if (wind >= 5 && wind <= 20) score += 6; else if (wind > 30) score -= 10;
+    if (wave >= 0.5 && wave <= 1.5) score += 6; else if (wave > 2.5) score -= 12;
+    if (wavePeriod) { if (wavePeriod >= 8 && wavePeriod <= 14) score += 7; else if (wavePeriod < 6) score -= 8; else if (wavePeriod > 16) score -= 5; }
+    if (currVel !== undefined && currVel !== null) { if (currVel >= 0.1 && currVel <= 0.5) score += 6; else if (currVel > 0.8) score -= 10; else if (currVel < 0.05) score -= 4; }
+    if (pTrend) { if (pTrend.trend === 'falling') score += 9; else if (pTrend.trend === 'rising') score -= 7; }
+    if (cloud !== undefined && cloud !== null) { if (cloud >= 40 && cloud <= 80) score += 4; else if (cloud < 10) score -= 4; }
+    switch(sp) {
+        case 'Robalo': if (pres >= 1013 && pres <= 1017) score += 15; if (isSouth) score += 12; if (wind > 20 && isNorth) score -= 15; if (wave > 1 && wave < 2.5) score += 10; if (temp >= 12 && temp <= 20) score += 8; break;
+        case 'Sargo': if (temp >= 15 && temp <= 22) score += 10; if (isNorth && wind < 15) score += 5; if (wave > 0.8) score += 5; break;
+        case 'Dourada': if (temp >= 16 && temp <= 22) score += 12; if (wave < 1.2) score += 5; if (pres > 1005 && pres < 1020) score += 8; break;
+        case 'Sardinha': if (temp > 18) score += 15; else score -= 15; if (wave > 1.5) score -= 20; if (wave < 1) score += 10; break;
+        case 'Cavala': if (temp > 16) score += 10; if (wind > 10 && wind < 25) score += 5; break;
+        case 'Carapau': if (temp > 15) score += 8; if (wave < 1.5) score += 5; break;
+        case 'Polvo': if (wave < 1) score += 12; else if (wave > 1.5) score -= 15; if (pres > 1010 && pres < 1020) score += 8; break;
+        case 'Lula': if (wave < 1) score += 10; else if (wave > 1.5) score -= 12; break;
+        case 'Choco': if (wave < 1) score += 10; else if (wave > 1.5) score -= 10; break;
+        case 'Safio': if (wind < 15) score += 5; if (pres < 1015) score += 5; break;
+        case 'Corvina': if (pres > 1010 && pres < 1020) score += 10; if (wave > 0.5 && wave < 1.8) score += 8; if (temp > 17) score += 8; break;
+        case 'Garoupa': if (pres > 1010) score += 5; if (wave < 1.5) score += 5; break;
+        case 'Pargo': if (wave < 1.5) score += 5; if (pres > 1008) score += 5; break;
+        case 'Linguado': if (wave < 1.2) score += 10; if (pres > 1005) score += 5; break;
+        case 'Salmonete': if (wave < 1.5) score += 5; if (temp > 14) score += 5; break;
+        case 'Tainha': if (wave < 1) score += 8; if (wind < 15) score += 5; break;
+        case 'Boga': if (wind < 20) score += 5; break;
+        case 'Xarroco': if (wind < 20) score += 5; if (pres < 1015) score += 5; break;
+        case 'Safia': if (wind < 20) score += 5; break;
+    }
+    // Плавная кривая: "сырой" балл (обычно 40…120) → проценты (5…85)
+    // Баланс: при хорошей погоде 75–85%, при идеале — не все 85%
+    const normalized = Math.max(0, Math.min(1, (score - 40) / 80));
+    return Math.round(5 + normalized * 80);
+}
+
+function calcProb(sp, pres, wind, windDeg, wave, temp, solunarBonus, wavePeriod, currVel, cloud, pTrend) {
+    let score = getBaseScore(sp, pres, wind, windDeg, wave, temp, solunarBonus, wavePeriod, currVel, cloud, pTrend);
+    
+    // --- КОРМОВОЙ БОНУС (рекурсивный) ---
+    const predators = ['Robalo', 'Dourada', 'Corvina', 'Pargo', 'Garoupa', 'Safio'];
+    if (predators.includes(sp)) {
+        const preySpecies = ['Sardinha', 'Carapau', 'Cavala'];
+        let preyActive = false;
+        for (let i = 0; i < preySpecies.length; i++) {
+            const preyScore = getBaseScore(preySpecies[i], pres, wind, windDeg, wave, temp, solunarBonus, wavePeriod, currVel, cloud, pTrend);
+            if (preyScore > 60) {
+                preyActive = true;
+                break;
+            }
+        }
+        if (preyActive) score += 8;
+    }
+    
+    return Math.min(85, Math.max(5, score));
+}
+
+
+const speciesList = ['Sargo','Robalo','Dourada','Safia','Corvina','Polvo','Safio','Linguado','Lula','Choco','Sardinha','Cavala','Carapau','Tainha','Pargo','Garoupa','Salmonete','Boga','Xarroco'];
+
+function drawMiniChart(tides, heights, dayIndex, topFish) {
+    const svgEl = document.getElementById('tide-chart-day-' + dayIndex);
+    if (!svgEl) return;
+
+    const W = 900, H = 260, mL = 50, mR = 20, mT = 30, mB = 40;
+    const pw = W - mL - mR, ph = H - mT - mB;
+    const minH = Math.min.apply(null, heights) - 0.3;
+    const maxH = Math.max.apply(null, heights) + 0.3;
+    const xH = h => mL + (h / 24) * pw;
+    const yH = v => mT + ph - ((v - minH) / (maxH - minH)) * ph;
+
+    let s = '';
+    s += `<line x1="${mL}" y1="${mT+ph}" x2="${mL+pw}" y2="${mT+ph}" stroke="#999" stroke-width="1"/>`;
+    s += `<line x1="${mL}" y1="${mT}" x2="${mL}" y2="${mT+ph}" stroke="#999" stroke-width="1"/>`;
+    for (let i = 0; i <= 4; i++) {
+        const v = minH + (maxH - minH) * (i / 4);
+        const y = yH(v);
+        s += `<line x1="${mL}" y1="${y}" x2="${mL+pw}" y2="${y}" stroke="#e0e0e0" stroke-width="1" stroke-dasharray="3,3"/>`;
+        s += `<text x="${mL-6}" y="${y+3}" text-anchor="end" font-size="9" fill="#666">${v.toFixed(1)}m</text>`;
+    }
+    for (let h = 0; h <= 24; h += 6) {
+        const x = xH(h);
+        s += `<text x="${x}" y="${mT+ph+16}" text-anchor="middle" font-size="9" fill="#666">${String(h).padStart(2,'0')}:00</text>`;
+    }
+    // Цветная линия: зелёная на подъёме, красная на спаде
+    for (let h = 0; h < 24; h++) {
+        if (heights[h] === undefined || heights[h + 1] === undefined) continue;
+        const P0 = (h - 1 >= 0 && heights[h - 1] !== undefined) ? heights[h - 1] : heights[h];
+        const P1 = heights[h];
+        const P2 = heights[h + 1];
+        const P3 = (h + 2 <= 24 && heights[h + 2] !== undefined) ? heights[h + 2] : heights[h + 1];
+        const b1y = P1 + (P2 - P0) / 6;
+        const b2y = P2 - (P3 - P1) / 6;
+        const smSteps = 12;
+        let smPrevX = xH(h), smPrevY = yH(P1), smPrevMeter = P1;
+        for (let sub = 1; sub <= smSteps; sub++) {
+            const t = sub / smSteps;
+            const mt = 1 - t;
+            const yMeter = mt*mt*mt*P1 + 3*mt*mt*t*b1y + 3*mt*t*t*b2y + t*t*t*P2;
+            const x = xH(h + t);
+            const y = yH(yMeter);
+            const rising = yMeter > smPrevMeter;
+            const localColor = rising ? '#28a745' : '#dc3545';
+            s += `<line x1="${smPrevX}" y1="${smPrevY}" x2="${x}" y2="${y}" stroke="${localColor}" stroke-width="2" stroke-linecap="round"/>`;
+            smPrevX = x; smPrevY = y; smPrevMeter = yMeter;
+        }
+    }
+    tides.forEach(t => {
+        const x = xH(t.rawHour), y = yH(t.height);
+        const c = t.type === 'high' ? '#28a745' : '#dc3545';
+        s += `<circle cx="${x}" cy="${y}" r="5" fill="${c}" stroke="#fff" stroke-width="1.5"/>`;
+        s += `<text x="${x}" y="${y-10}" text-anchor="middle" font-size="9" font-weight="bold" fill="${c}" stroke="#fff" stroke-width="2" paint-order="stroke">${t.time}</text>`;
+    });
+
+    // === ТОП-5 РЫБ НА МИНИ-ГРАФИКЕ ===
+    if (topFish && topFish.length > 0 && heights && heights.length > 24) {
+        const placedMini = [];
+        topFish.forEach(function(f, i) {
+            const x = xH(f.hour);
+            const hIdx = Math.floor(f.hour);
+            const hFrac = f.hour - hIdx;
+            const h0 = heights[hIdx] || 0;
+            const h1 = heights[Math.min(hIdx + 1, 24)] || h0;
+            const height = h0 + (h1 - h0) * hFrac;
+            const y = yH(height);
+
+            const isRising = f.isRising;
+            const arrow = isRising ? '↑' : '↓';
+            const col = isRising ? '#28a745' : '#dc3545';
+
+            // Маленький кружок на линии
+            s += `<circle cx="${x}" cy="${y}" r="4" fill="${col}" stroke="#fff" stroke-width="1.5"/>`;
+
+            // Плашка с номером и названием
+            const label = f.name + ' ' + f.prob + '% ' + arrow;
+            const w = 8 + label.length * 5.5;
+            const h = 20;
+            let bx = x + 10;
+            if (bx + w > mL + pw - 3) bx = x - 10 - w;
+            let by = y - h / 2;
+
+            function overlapsMini(rect) {
+                for (const r of placedMini) {
+                    if (rect.x < r.x + r.w + 1 && rect.x + rect.w + 1 > r.x &&
+                        rect.y < r.y + r.h + 1 && rect.y + rect.h + 1 > r.y) return true;
+                }
+                return false;
+            }
+            
+            // Пробуем разные положения для мини-графика
+            const offsetsMini = [
+                {dx: 10, dy: -h/2}, {dx: 10, dy: h/2 + 5}, {dx: 10, dy: -h/2 - 5},
+                {dx: -10 - w, dy: -h/2}, {dx: -10 - w, dy: h/2 + 5}, {dx: -10 - w, dy: -h/2 - 5},
+                {dx: 10, dy: -h*1.5}, {dx: 10, dy: h*1.5},
+                {dx: -10 - w, dy: -h*1.5}, {dx: -10 - w, dy: h*1.5}
+            ];
+            
+            let placedOKMini = false;
+            for (let k = 0; k < offsetsMini.length; k++) {
+                let testBx = x + offsetsMini[k].dx;
+                let testBy = y + offsetsMini[k].dy;
+                if (testBx < mL + 1) testBx = mL + 1;
+                if (testBx + w > mL + pw - 1) testBx = mL + pw - w - 1;
+                if (testBy < mT + 1) testBy = mT + 1;
+                if (testBy + h > mT + ph - 1) testBy = mT + ph - h - 1;
+                
+                if (!overlapsMini({x: testBx, y: testBy, w: w, h: h})) {
+                    bx = testBx; by = testBy; placedOKMini = true; break;
+                }
+            }
+            
+            if (!placedOKMini) {
+                bx = x + 10;
+                by = Math.max(mT + 1, Math.min(y - h/2, mT + ph - h - 1));
+            }
+
+            placedMini.push({x: bx, y: by, w: w, h: h});
+
+            // Линия от точки к плашке
+            s += `<line x1="${x + 4}" y1="${y}" x2="${bx}" y2="${by + h/2}" stroke="${col}" stroke-width="0.8" stroke-dasharray="2,2" opacity="0.5"/>`;
+
+            // Плашка
+            s += `<rect x="${bx}" y="${by}" width="${w}" height="${h}" rx="4" ry="4" fill="#fff" stroke="${col}" stroke-width="1.5" opacity="0.95"/>`;
+            s += `<text x="${bx + w/2}" y="${by + h/2 + 3.5}" text-anchor="middle" font-size="9" font-weight="bold" fill="${col}">${label}</text>`;
+        });
+    }
+
+    svgEl.innerHTML = s;
+}
+
+function drawChart(tides, heights, currentTime, topFish) {
+    const W = 1000, H = 450, mL = 70, mR = 35, mT = 45, mB = 55;
+    const pw = W - mL - mR, ph = H - mT - mB;
+    const minH = Math.min(...heights.slice(0, 25)) - 0.3;
+    const maxH = Math.max(...heights.slice(0, 25)) + 0.3;
+    const xH = h => mL + (h / 24) * pw;
+    const yH = v => mT + ph - ((v - minH) / (maxH - minH)) * ph;
+
+    let s = '';
+    s += `<line x1="${mL}" y1="${mT+ph}" x2="${mL+pw}" y2="${mT+ph}" stroke="#999" stroke-width="1.5"/>`;
+    s += `<line x1="${mL}" y1="${mT}" x2="${mL}" y2="${mT+ph}" stroke="#999" stroke-width="1.5"/>`;
+    for (let i = 0; i <= 4; i++) {
+        const v = minH + (maxH - minH) * (i / 4);
+        const y = yH(v);
+        s += `<line x1="${mL}" y1="${y}" x2="${mL+pw}" y2="${y}" stroke="#e0e0e0" stroke-width="1" stroke-dasharray="3,3"/>`;
+        s += `<text x="${mL-8}" y="${y+4}" text-anchor="end" font-size="11" fill="#666">${v.toFixed(1)} м</text>`;
+    }
+    for (let h = 0; h <= 24; h += 3) {
+        const x = xH(h);
+        s += `<line x1="${x}" y1="${mT+ph}" x2="${x}" y2="${mT+ph+5}" stroke="#999" stroke-width="1"/>`;
+        s += `<text x="${x}" y="${mT+ph+20}" text-anchor="middle" font-size="11" fill="#666">${String(h).padStart(2,'0')}:00</text>`;
+    }
+    // Градиентная линия: зелёная на подъёме, красная на спаде
+    for (let h = 0; h < 24; h++) {
+        if (heights[h] === undefined || heights[h + 1] === undefined) continue;
+        const P0 = (h - 1 >= 0 && heights[h - 1] !== undefined) ? heights[h - 1] : heights[h];
+        const P1 = heights[h];
+        const P2 = heights[h + 1];
+        const P3 = (h + 2 <= 24 && heights[h + 2] !== undefined) ? heights[h + 2] : heights[h + 1];
+        const b1y = P1 + (P2 - P0) / 6;
+        const b2y = P2 - (P3 - P1) / 6;
+        const smSteps = 16;
+        let smPrevX = xH(h), smPrevY = yH(P1), smPrevMeter = P1;
+        for (let sub = 1; sub <= smSteps; sub++) {
+            const t = sub / smSteps;
+            const mt = 1 - t;
+            const yMeter = mt*mt*mt*P1 + 3*mt*mt*t*b1y + 3*mt*t*t*b2y + t*t*t*P2;
+            const x = xH(h + t);
+            const y = yH(yMeter);
+            const rising = yMeter > smPrevMeter;
+            const localColor = rising ? '#28a745' : '#dc3545';
+            s += `<line x1="${smPrevX}" y1="${smPrevY}" x2="${x}" y2="${y}" stroke="${localColor}" stroke-width="2.5" stroke-linecap="round"/>`;
+            smPrevX = x; smPrevY = y; smPrevMeter = yMeter;
+        }
+    }
+    tides.forEach(t => {
+        const x = xH(t.rawHour), y = yH(t.height);
+        const c = t.type === 'high' ? '#28a745' : '#dc3545';
+        s += `<circle cx="${x}" cy="${y}" r="9" fill="${c}" stroke="#fff" stroke-width="2.5"/>`;
+        s += `<text x="${x}" y="${y-19}" text-anchor="middle" font-size="13" font-weight="bold" fill="${c}" stroke="#fff" stroke-width="3" paint-order="stroke">${t.time}</text>`;
+        s += `<text x="${x}" y="${y+28}" text-anchor="middle" font-size="12" font-weight="bold" fill="${c}" stroke="#fff" stroke-width="3" paint-order="stroke">${t.height.toFixed(2)}м</text>`;
+    });
+    const nx = xH(currentTime);
+    s += `<line x1="${nx}" y1="${mT}" x2="${nx}" y2="${mT+ph}" stroke="#e74c3c" stroke-width="2" stroke-dasharray="5,3"/>`;
+    const ni = Math.floor(currentTime), nf = currentTime - ni;
+    const nh = heights[ni] + (heights[Math.min(ni+1,23)] - heights[ni]) * nf;
+    s += `<circle cx="${nx}" cy="${yH(nh)}" r="6" fill="#e74c3c" stroke="#fff" stroke-width="2"/>`;
+    s += `<text x="${nx}" y="${mT-8}" text-anchor="middle" font-size="12" font-weight="bold" fill="#e74c3c" stroke="#fff" stroke-width="3" paint-order="stroke">${tr.now}</text>`;
+    // === ТОП-3 РЫБЫ НА ГРАФИКЕ (плашки с обводкой, смещены вправо) ===
+    if (topFish && topFish.length > 0 && tides && tides.length > 0) {
+        const placed = []; // {x, y, w, h}
+        topFish.forEach(function(f, i) {
+            const x = xH(f.hour);
+            const hIdx = Math.floor(f.hour);
+            const hFrac = f.hour - hIdx;
+            const h0 = heights[hIdx] || 0;
+            const h1 = heights[Math.min(hIdx+1, 23)] || h0;
+            const height = h0 + (h1 - h0) * hFrac;
+            const y = yH(height);
+
+            // Правильное определение: растёт вода или падает В ЭТОТ ЧАС
+            const hPrev = heights[Math.max(hIdx - 1, 0)] || height;
+            const hNext = heights[Math.min(hIdx + 1, 23)] || height;
+            const isRising = (hNext - hPrev) > 0;
+            const arrow = isRising ? '↑' : '↓';
+            const col = isRising ? '#28a745' : '#dc3545';
+
+            // Маленький кружок на линии (точное время)
+            s += `<circle cx="${x}" cy="${y}" r="5" fill="${col}" stroke="#fff" stroke-width="2"/>`;
+
+            // Плашка с названием рыбы
+            const label = f.name + ' ' + f.prob + '% ' + arrow;
+            const w = 10 + label.length * 7.2;
+            const h = 26;
+            let bx = x + 14;
+            if (bx + w > mL + pw - 5) bx = x - 14 - w;
+            let by = y - h / 2;
+
+            // Проверка на наложение
+            function overlaps(rect) {
+                for (const r of placed) {
+                    if (rect.x < r.x + r.w + 2 && rect.x + rect.w + 2 > r.x &&
+                        rect.y < r.y + r.h + 2 && rect.y + rect.h + 2 > r.y) return true;
+                }
+                return false;
+            }
+            
+            let attempts = 0;
+            let placedOK = false;
+            // Пробуем разные положения: снизу-справа, сверху-справа, снизу-слева, сверху-слева
+            const offsets = [
+                {dx: 14, dy: -h/2}, {dx: 14, dy: h/2 + 8}, {dx: 14, dy: -h/2 - 8},
+                {dx: -14 - w, dy: -h/2}, {dx: -14 - w, dy: h/2 + 8}, {dx: -14 - w, dy: -h/2 - 8},
+                {dx: 14, dy: -h*1.5}, {dx: 14, dy: h*1.5},
+                {dx: -14 - w, dy: -h*1.5}, {dx: -14 - w, dy: h*1.5}
+            ];
+            
+            for (let k = 0; k < offsets.length; k++) {
+                let testBx = x + offsets[k].dx;
+                let testBy = y + offsets[k].dy;
+                if (testBx < mL + 2) testBx = mL + 2;
+                if (testBx + w > mL + pw - 2) testBx = mL + pw - w - 2;
+                if (testBy < mT + 2) testBy = mT + 2;
+                if (testBy + h > mT + ph - 2) testBy = mT + ph - h - 2;
+                
+                if (!overlaps({x: testBx, y: testBy, w: w, h: h})) {
+                    bx = testBx; by = testBy; placedOK = true; break;
+                }
+            }
+            
+            if (!placedOK) {
+                bx = x + 14;
+                by = Math.max(mT + 2, Math.min(y - h/2, mT + ph - h - 2));
+            }
+
+            placed.push({x: bx, y: by, w: w, h: h});
+
+            // Тонкая линия от точки к плашке
+            s += `<line x1="${x + 6}" y1="${y}" x2="${bx}" y2="${by + h/2}" stroke="${col}" stroke-width="1" stroke-dasharray="2,2" opacity="0.5"/>`;
+
+            // Плашка
+            s += `<rect x="${bx}" y="${by}" width="${w}" height="${h}" rx="6" ry="6" fill="#fff" stroke="${col}" stroke-width="2" opacity="0.96"/>`;
+            s += `<text x="${bx + w/2}" y="${by + h/2 + 4.5}" text-anchor="middle" font-size="12" font-weight="bold" fill="${col}">${label}</text>`;
+        });
+    }
+
+    document.getElementById('tide-chart').innerHTML = s;
+}
+
+
+// 1. Тип прилива: Сизигийный (большая вода) / Квадратурный (малая вода) / Средний
+function getTideType(tides) {
+    if (!tides || tides.length < 2) return { type: 'unknown', score: 0 };
+    let maxH = -Infinity, minH = Infinity;
+    tides.forEach(t => { if (t.height > maxH) maxH = t.height; if (t.height < minH) minH = t.height; });
+    const range = maxH - minH;
+    if (range > 2.5) return { type: 'spring', label: 'Большая вода', score: 10 };
+    if (range > 1.5) return { type: 'mid', label: 'Средняя вода', score: 5 };
+    if (range > 0.5) return { type: 'neap', label: 'Малая вода', score: -5 };
+    return { type: 'slack', label: 'Слабая вода', score: -10 };
+}
+
+// 2. Скорость изменения уровня воды (см/ч) — важнейший фактор для хищника
+function getTideVelocity(tides, currentHour) {
+    if (!tides || tides.length === 0) return { velocity: 0, label: '—', score: 0 };
+    let nearest = tides[0], minD = Infinity;
+    tides.forEach(t => { const d = Math.abs(t.rawHour - currentHour); if (d < minD) { minD = d; nearest = t; } });
+    const diff = Math.abs(nearest.rawHour - currentHour);
+    if (diff < 1) return { velocity: 0, label: 'Пик (стоячая вода)', score: -10 };
+    if (diff < 2.5) return { velocity: 15, label: 'Сильное движение', score: 10 };
+    if (diff < 4) return { velocity: 10, label: 'Умеренное движение', score: 5 };
+    return { velocity: 5, label: 'Слабое движение', score: 0 };
+}
+
+// 3. Температурная аномалия (отклонение от нормы за 7 дней)
+function getTempAnomaly(temps, currentHour) {
+    if (!temps || temps.length < 168) return { anomaly: 0, label: 'Нет данных', score: 0 };
+    const currentTemp = temps[currentHour] || 18;
+    let sum = 0; let count = 0;
+    for (let i = 0; i < 7 * 24; i++) { if (temps[i] !== undefined) { sum += temps[i]; count++; } }
+    const weekAvg = count > 0 ? sum / count : 18;
+    const anomaly = currentTemp - weekAvg;
+    if (Math.abs(anomaly) < 0.5) return { anomaly: anomaly, label: 'Стабильно', score: 5 };
+    if (anomaly > 1.5) return { anomaly: anomaly, label: 'Резкое потепление', score: -5 };
+    if (anomaly < -1.5) return { anomaly: anomaly, label: 'Резкое похолодание', score: -10 };
+    return { anomaly: anomaly, label: 'Умеренные изменения', score: 0 };
+}
+
+    
+
+    function findTodayDayIdx(days) {
+        const now = new Date();
+        const y = now.getFullYear();
+        const m = String(now.getMonth() + 1).padStart(2, '0');
+        const d = String(now.getDate()).padStart(2, '0');
+        const todayStr = y + '-' + m + '-' + d;
+        for (let i = 0; i < days.length; i++) {
+            if (days[i] === todayStr) return i;
+        }
+        return 0;
+    }
+
+    function findTodayIdx(times) {
+        const now = new Date();
+        const todayMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0);
+        const todayTs = todayMidnight.getTime();
+        for (let i = 0; i < times.length; i++) {
+            const t = new Date(times[i]).getTime();
+            if (t >= todayTs) return i;
+        }
+        return 0;
+    }
+
+    function findExactTides(arr, dayStart, start, end) {
+        let tides = [];
+        for (let i = start + 1; i < end; i++) {
+            const p = arr[i - 1], c = arr[i], n = arr[i + 1];
+            if (p === undefined || n === undefined) continue;
+            let type = null;
+            if (c >= p && c >= n) type = 'high';
+            else if (c <= p && c <= n) type = 'low';
+            if (!type) continue;
+            let f = 0;
+            const d = p - 2 * c + n;
+            if (d !== 0) f = (p - n) / (2 * d);
+            const rawHour = (i - dayStart) + f;
+            if (tides.some(t => t.type === type && Math.abs(t.rawHour - rawHour) < 2)) continue;
+            const hh = Math.floor(rawHour);
+            const mm = Math.round((rawHour - hh) * 60);
+            tides.push({
+                type: type,
+                time: String(hh).padStart(2, '0') + ':' + String(mm).padStart(2, '0'),
+                height: c,
+                rawHour: rawHour
+            });
+        }
+        return tides;
+    }
+
+    
+    function buildBISVG(hourlyBI, peakHour, color) {
+        const W = 450, H = 80, mL = 10, mR = 10, mT = 8, mB = 18;
+        const pw = W - mL - mR, ph = H - mT - mB;
+        const vals = hourlyBI.slice(5, 22);
+        const maxV = Math.max.apply(null, vals) + 2;
+        const minV = Math.min.apply(null, vals) - 2;
+        const range = Math.max(1, maxV - minV);
+        const xH = h => mL + ((h - 5) / 16) * pw;
+        const yH = v => mT + ph - ((v - minV) / range) * ph;
+        
+        let pathD = '';
+        for (let h = 5; h <= 22; h++) {
+            pathD += (h === 5 ? 'M' : 'L') + xH(h) + ',' + yH(hourlyBI[h]) + ' ';
+        }
+        
+        let s = '<svg viewBox="0 0 ' + W + ' ' + H + '" style="width:100%; max-width:500px; height:80px; display:block; margin:8px auto 0;">';
+        s += '<line x1="' + mL + '" y1="' + (mT+ph) + '" x2="' + (mL+pw) + '" y2="' + (mT+ph) + '" stroke="#ccc" stroke-width="1"/>';
+        s += '<path d="' + pathD + '" fill="none" stroke="' + color + '" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>';
+        // Peak marker
+        s += '<circle cx="' + xH(peakHour) + '" cy="' + yH(hourlyBI[peakHour]) + '" r="5" fill="#e74c3c" stroke="#fff" stroke-width="2"/>';
+        s += '<text x="' + xH(peakHour) + '" y="' + (yH(hourlyBI[peakHour]) - 10) + '" text-anchor="middle" font-size="11" font-weight="bold" fill="#e74c3c" stroke="#fff" stroke-width="3" paint-order="stroke">' + String(peakHour).padStart(2,'0') + ':00</text>';
+        // Time axis
+        for (let h = 6; h <= 21; h += 3) {
+            s += '<text x="' + xH(h) + '" y="' + (mT+ph+12) + '" text-anchor="middle" font-size="9" fill="#888">' + String(h).padStart(2,'0') + 'ч</text>';
+        }
+        s += '</svg>';
+        return s;
+    }
+
+    async function loadForecast() {
+        try {
+        const wUrl = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&hourly=temperature_2m,pressure_msl,wind_speed_10m,wind_direction_10m,cloud_cover&daily=sunrise,sunset&past_days=7&timezone=auto`;
+        const mUrl = `https://marine-api.open-meteo.com/v1/marine?latitude=${lat}&longitude=${lon}&hourly=wave_height,wave_period,sea_surface_temperature,sea_level_height_msl,ocean_current_velocity,ocean_current_direction&past_days=7&timezone=auto`;
+        const [wR, mR] = await Promise.all([fetch(wUrl), fetch(mUrl)]);
+        const wD = await wR.json(), mD = await mR.json();
+        if (!wD.hourly || !mD.hourly) throw new Error("No data");
+
+        const now = new Date();
+        const TODAY_IDX = findTodayIdx(wD.hourly.time);
+        const currH = TODAY_IDX + now.getHours();
+        const cT = now.getHours() + now.getMinutes() / 60;
+        const allTides = findExactTides(mD.hourly.sea_level_height_msl, TODAY_IDX, TODAY_IDX, TODAY_IDX + 48);
+        const todayTides = allTides.filter(t => t.rawHour >= 0 && t.rawHour < 24);
+
+        // Предрасчёт соланара по часам
+        const dayStart = new Date(); dayStart.setHours(0, 0, 0, 0);
+        const solPeriods = getSolunarPeriods(dayStart);
+        const hourlySolunar = [];
+        for (let hh = 0; hh < 24; hh++) {
+            const t2 = new Date(dayStart); t2.setHours(hh);
+            hourlySolunar[hh] = getSolunarScore(solPeriods, t2).score;
+        }
+
+        // Для каждой рыбы — лучший час
+        const allBestHours = [];
+        speciesList.forEach(function(sp) {
+            let bestHour = 12, bestScore = 0;
+            const hourlyScores = {};
+            
+            // Ищем по всем 24 часам
+            for (let hh = 0; hh < 24; hh++) {
+                const idx = TODAY_IDX + hh;
+                const pres0 = wD.hourly.pressure_msl[idx] || 1013;
+                const wind0 = wD.hourly.wind_speed_10m[idx] || 10;
+                const wDeg0 = wD.hourly.wind_direction_10m[idx] || 0;
+                const wave0 = mD.hourly.wave_height[idx] || 1;
+                const temp0 = mD.hourly.sea_surface_temperature[idx] || 18;
+                const wPer0 = mD.hourly.wave_period ? mD.hourly.wave_period[idx] : null;
+                const cVel0 = mD.hourly.ocean_current_velocity ? mD.hourly.ocean_current_velocity[idx] : null;
+                const cloud0 = wD.hourly.cloud_cover ? wD.hourly.cloud_cover[idx] : null;
+                const pTr0 = getPressureTrend(wD.hourly.pressure_msl, idx);
+                
+                const score0 = calcProb(sp, pres0, wind0, wDeg0, wave0, temp0, hourlySolunar[hh], wPer0, cVel0, cloud0, pTr0);
+                hourlyScores[hh] = score0;
+                
+                if (score0 > bestScore) { 
+                    bestScore = score0; 
+                    bestHour = hh; 
+                }
+            }
+            
+            // Вычисляем окно клёва (в пределах 5% от максимума)
+            const threshold = bestScore - 5;
+            let peakStart = bestHour;
+            let peakEnd = bestHour;
+            
+            // Расширяем границы, пока соседние часы попадают в порог
+            while (peakStart > 0 && (hourlyScores[peakStart - 1] || 0) >= threshold) {
+                peakStart--;
+            }
+            while (peakEnd < 23 && (hourlyScores[peakEnd + 1] || 0) >= threshold) {
+                peakEnd++;
+            }
+            
+            allBestHours.push({ name: sp, hour: bestHour, prob: bestScore, peakStart: peakStart, peakEnd: peakEnd });
+        });
+        
+        const topFish = allBestHours.sort(function(a, b) { return b.prob - a.prob; }).slice(0, 5);
+
+        drawChart(todayTides, mD.hourly.sea_level_height_msl.slice(TODAY_IDX, TODAY_IDX + 25), cT, topFish);
+
+        // Легенда под графиком
+        const legendEl = document.getElementById('top-fish-legend');
+        if (legendEl && topFish.length > 0 && todayTides.length > 0) {
+            legendEl.innerHTML = topFish.map(function(f, i) {
+                const hIdx = Math.floor(f.hour);
+                const hPrev = mD.hourly.sea_level_height_msl[Math.max(TODAY_IDX + hIdx - 1, 0)] || 0;
+                const hNext = mD.hourly.sea_level_height_msl[Math.min(TODAY_IDX + hIdx + 1, TODAY_IDX + 23)] || 0;
+                const isRising = (hNext - hPrev) > 0;
+                const arrow = isRising ? '↑ Прилив' : '↓ Отлив';
+                const borderColor = isRising ? '#28a745' : '#dc3545';
+
+                // Строгая проверка на числа
+                let pStart = Number(f.peakStart);
+                let pEnd = Number(f.peakEnd);
+                if (isNaN(pStart)) pStart = Number(f.hour);
+                if (isNaN(pEnd) || pEnd < pStart) pEnd = pStart;
+                
+                // Форматируем строку времени
+                const startStr = String(pStart).padStart(2, '0') + ':00';
+                let timeStr;
+                if (pEnd > pStart) {
+                    timeStr = startStr + '–' + String(pEnd + 1).padStart(2, '0') + ':00';
+                } else {
+                    timeStr = startStr + '–' + String(pStart + 1).padStart(2, '0') + ':00';
+                }
+
+                return `<div style="display:inline-block; margin:5px 8px; padding:8px 14px; background:#fff; border-radius:8px; border-left:4px solid ${borderColor}; box-shadow:0 2px 6px rgba(0,0,0,0.08);"><b>${f.name}</b> — <b>${timeStr}</b> <span style="color:${borderColor};">${arrow}</span> <span style="color:#28a745; font-weight:bold;">(${f.prob}%)</span></div>`;
+            }).join('');
+        }
+
+
+        let prevT = allTides[0], nextT = allTides[allTides.length - 1];
+        for (let i = 0; i < allTides.length - 1; i++) {
+            if (allTides[i].rawHour <= cT && allTides[i+1].rawHour > cT) { prevT = allTides[i]; nextT = allTides[i+1]; break; }
+        }
+        if (prevT && nextT) {
+            document.getElementById('current-status').style.display = 'block';
+            const isR = nextT.type === 'high';
+            const td = nextT.rawHour - cT;
+            const hL = Math.floor(td), mL = Math.round((td - hL) * 60);
+            const col = isR ? 'var(--rising)' : 'var(--falling)';
+            document.getElementById('status-action').innerText = isR ? tr.waterRising : tr.waterFalling;
+            document.getElementById('status-action').style.color = col;
+            document.getElementById('status-target').innerHTML = `${tr.goesTo} <b>${isR ? tr.highTide : tr.lowTide}</b> ${tr.through} <span style="color:var(--primary); font-weight:bold;">${nextT.time}</span> (${hL} ${tr.hour} ${mL} ${tr.min}).`;
+            const cW = wD.hourly.wind_speed_10m[currH] || 0;
+            const cWd = wD.hourly.wind_direction_10m[currH] || 0;
+            const cWv = (mD.hourly && mD.hourly.wave_height && mD.hourly.wave_height[currH] !== undefined) ? mD.hourly.wave_height[currH] : 0;
+            document.getElementById('curr-wind').innerText = `${cW.toFixed(0)} км/ч, ${getWindDirection(cWd)}`;
+            const cwDanger = getWaveDanger(cWv);
+            const cwEl = document.getElementById('curr-wave');
+            cwEl.innerText = `${cWv.toFixed(1)} м ${cwDanger.icon}`;
+            cwEl.style.color = cwDanger.color;
+            cwEl.style.fontWeight = 'bold';
+        }
+
+        let html = '';
+        const dayCharts = [];
+        const days = wD.daily.time;
+        const TODAY_DAY_IDX = findTodayDayIdx(days);
+        for (let d = 0; d < 7; d++) {
+            const bI = TODAY_IDX + d * 24;
+            const dDateStr = days[TODAY_DAY_IDX + d];
+            const dO = new Date(dDateStr + 'T12:00:00');
+            const dS = tr.weekdays[dO.getDay()] + ', ' + dO.getDate() + ' ' + tr.months[dO.getMonth()];
+            const isOpen = d === 0 ? 'open' : '';
+            const mI = bI + 12;
+            const pres = wD.hourly.pressure_msl[mI];
+            const wind = wD.hourly.wind_speed_10m[mI];
+            const wDeg = wD.hourly.wind_direction_10m[mI];
+            const wDir = getWindDirection(wDeg);
+            const wave = mD.hourly.wave_height[mI];
+            const temp = mD.hourly.sea_surface_temperature[mI];
+            const wPer = mD.hourly.wave_period ? mD.hourly.wave_period[mI] : null;
+            const cVel = mD.hourly.ocean_current_velocity ? mD.hourly.ocean_current_velocity[mI] : null;
+            const cloud = wD.hourly.cloud_cover ? wD.hourly.cloud_cover[mI] : null;
+            const pTr = getPressureTrend(wD.hourly.pressure_msl, mI);
+            const dayT = findExactTides(mD.hourly.sea_level_height_msl, TODAY_IDX + d * 24, TODAY_IDX + d * 24, TODAY_IDX + d * 24 + 24);
+            const dayHeights = mD.hourly.sea_level_height_msl.slice(TODAY_IDX + d * 24, TODAY_IDX + d * 24 + 25);
+            // Считаем лучший час для каждой рыбы в этот день
+            const dayBestHours = [];
+            speciesList.forEach(function(sp) {
+                let bestHour = 12, bestScore = 0;
+                for (let hh = 0; hh < 24; hh++) {
+                    const idx = TODAY_IDX + d * 24 + hh;
+                    const pres0 = wD.hourly.pressure_msl[idx] || 1013;
+                    const wind0 = wD.hourly.wind_speed_10m[idx] || 10;
+                    const wDeg0 = wD.hourly.wind_direction_10m[idx] || 0;
+                    const wave0 = mD.hourly.wave_height[idx] || 1;
+                    const temp0 = mD.hourly.sea_surface_temperature[idx] || 18;
+                    const wPer0 = mD.hourly.wave_period ? mD.hourly.wave_period[idx] : null;
+                    const cVel0 = mD.hourly.ocean_current_velocity ? mD.hourly.ocean_current_velocity[idx] : null;
+                    const cloud0 = wD.hourly.cloud_cover ? wD.hourly.cloud_cover[idx] : null;
+                    const pTr0 = getPressureTrend(wD.hourly.pressure_msl, idx);
+                    const score0 = calcProb(sp, pres0, wind0, wDeg0, wave0, temp0, hourlySolunar[hh], wPer0, cVel0, cloud0, pTr0);
+                    if (score0 > bestScore) { bestScore = score0; bestHour = hh; }
+                }
+                // Направление воды в лучший час
+                const hPr = mD.hourly.sea_level_height_msl[TODAY_IDX + d * 24 + Math.max(bestHour - 1, 0)] || 0;
+                const hNx = mD.hourly.sea_level_height_msl[TODAY_IDX + d * 24 + Math.min(bestHour + 1, 23)] || 0;
+                dayBestHours.push({ name: sp, hour: bestHour, prob: bestScore, isRising: hNx > hPr });
+            });
+            const dayTopFish = dayBestHours.sort(function(a, b) { return b.prob - a.prob; }).slice(0, 5);
+            
+            // === BITE INDEX (BI) — средний шанс по всем 19 рыбам ===
+            const hourlyBI = [];
+            for (let h = 0; h < 24; h++) {
+                const idx = TODAY_IDX + d * 24 + h;
+                const presH = wD.hourly.pressure_msl[idx] || 1013;
+                const windH = wD.hourly.wind_speed_10m[idx] || 10;
+                const wDegH = wD.hourly.wind_direction_10m[idx] || 0;
+                const waveH = mD.hourly.wave_height[idx] || 1;
+                const tempH = mD.hourly.sea_surface_temperature[idx] || 18;
+                const wPerH = mD.hourly.wave_period ? mD.hourly.wave_period[idx] : null;
+                const cVelH = mD.hourly.ocean_current_velocity ? mD.hourly.ocean_current_velocity[idx] : null;
+                const cloudH = wD.hourly.cloud_cover ? wD.hourly.cloud_cover[idx] : null;
+                const pTrH = getPressureTrend(wD.hourly.pressure_msl, idx);
+                let sumBI = 0;
+                for (let i = 0; i < speciesList.length; i++) {
+                    sumBI += calcProb(speciesList[i], presH, windH, wDegH, waveH, tempH, hourlySolunar[h] || 0, wPerH, cVelH, cloudH, pTrH);
+                }
+                hourlyBI[h] = Math.round(sumBI / speciesList.length);
+            }
+            let biSum = 0, biCount = 0;
+            for (let h = 5; h < 22; h++) { biSum += hourlyBI[h]; biCount++; }
+            const biteIndex = Math.round(biSum / biCount);
+            let peakHourBI = 5, peakValBI = 0;
+            for (let h = 5; h < 22; h++) {
+                if (hourlyBI[h] > peakValBI) { peakValBI = hourlyBI[h]; peakHourBI = h; }
+            }
+            const biColor = biteIndex >= 75 ? '#28a745' : (biteIndex >= 60 ? '#ffc107' : (biteIndex >= 45 ? '#fd7e14' : '#dc3545'));
+            const biLabel = biteIndex >= 75 ? '🔥 Отличный клёв' : (biteIndex >= 60 ? '✅ Хороший клёв' : (biteIndex >= 45 ? '⚠️ Средний клёв' : '❌ Слабый клёв'));
+            const biSVG = buildBISVG(hourlyBI, peakHourBI, biColor);
+            
+            dayCharts.push({ tides: dayT, heights: dayHeights, index: d, topFish: dayTopFish });
+            const tideType = getTideType(dayT);
+            const tideVel = getTideVelocity(dayT, 12);
+            const tempAnom = getTempAnomaly(mD.hourly.sea_surface_temperature, bI + 12);
+
+            let sLine = dayT.map(t => `<b>${t.time}</b> (${t.type === 'high' ? tr.highTideShort : tr.lowTideShort})`).join(' ➡ ');
+            if (!sLine) sLine = tr.noData;
+
+            let tHtml = '<table><tr><th>' + tr.type + '</th><th>' + tr.time + '</th><th>' + tr.height + '</th></tr>';
+            dayT.forEach(t => {
+                const isH = t.type === 'high';
+                tHtml += `<tr><td class="${isH ? 'tide-high' : 'tide-low'}">${isH ? tr.tideHigh : tr.tideLow}</td><td><b>${t.time}</b></td><td>${t.height.toFixed(2)} m</td></tr>`;
+            });
+            tHtml += '</table>';
+
+            const midTime = new Date(dDateStr + 'T12:00:00');
+            const dayP = getSolunarPeriods(midTime);
+            // Соланар-бонус из ДНЕВНОЙ оценки (не по полудню)
+            const dayQ = getSolunarDayQuality(dayP);
+            const solBonus = dayQ.stars === '⭐⭐⭐' ? 15 : (dayQ.stars === '⭐⭐' ? 0 : -15);
+
+                        // Используем dayBestHours (пиковый час для каждой рыбы), чтобы проценты совпадали с графиком
+            const top8 = dayBestHours.sort((a, b) => b.prob - a.prob).slice(0, 8).map(x => ({ sp: x.name, prob: x.prob }));
+            const sHtml = top8.map(x => {
+                // Считаем вероятность по каждому из 24 часов для этой рыбы
+                const hourlyData = [];
+                for (let h = 0; h < 24; h++) {
+                    const idx = TODAY_IDX + d * 24 + h;
+                    const presH = wD.hourly.pressure_msl[idx] || 1013;
+                    const windH = wD.hourly.wind_speed_10m[idx] || 10;
+                    const wDegH = wD.hourly.wind_direction_10m[idx] || 0;
+                    const waveH = mD.hourly.wave_height[idx] || 1;
+                    const tempH = mD.hourly.sea_surface_temperature[idx] || 18;
+                    const wPerH = mD.hourly.wave_period ? mD.hourly.wave_period[idx] : null;
+                    const cVelH = mD.hourly.ocean_current_velocity ? mD.hourly.ocean_current_velocity[idx] : null;
+                    const cloudH = wD.hourly.cloud_cover ? wD.hourly.cloud_cover[idx] : null;
+                    const pTrH = getPressureTrend(wD.hourly.pressure_msl, idx);
+                    const probH = calcProb(x.sp, presH, windH, wDegH, waveH, tempH, hourlySolunar[h] || 0, wPerH, cVelH, cloudH, pTrH, tideType.score, tideVel.score, tempAnom.score);
+                    hourlyData.push({ h: h, prob: probH });
+                }
+                // Находим лучший час и пиковые часы (в пределах 5% от максимума)
+                let bestH = 0, bestP = 0;
+                hourlyData.forEach(hd => { if (hd.prob > bestP) { bestP = hd.prob; bestH = hd.h; } });
+                const peakThreshold = bestP - 5; // всё, что в пределах 5% от максимума — пик
+                const peakHours = {};
+                hourlyData.forEach(hd => {
+                    if (hd.prob >= peakThreshold && hd.h >= 5 && hd.h <= 22) {
+                        peakHours[hd.h] = (hd.h === bestH) ? 'best' : 'peak';
+                    }
+                });
+
+                // Формируем строки для каждого часа
+                let hoursHtml = '';
+                for (let h = 0; h < 24; h++) {
+                    const isDay = h >= 5 && h <= 22;
+                    const timeStr = String(h).padStart(2, '0') + ':00';
+                    const peakCls = peakHours[h] ? ' ' + peakHours[h] : '';
+                    const rowCls = 'hourly-row' + (isDay ? '' : ' night') + peakCls;
+                    hoursHtml += `<div class="${rowCls}"><span class="hour-name">${timeStr}${isDay ? '' : ' 🌙'}</span><span class="hour-prob">${hourlyData[h].prob}%</span></div>`;
+                }
+
+                const u = `catalog_full.html?q=${encodeURIComponent(x.sp)}`;
+                const cls = x.prob >= 75 ? '' : (x.prob >= 60 ? 'low' : 'verylow');
+                return `<details class="species-details" style="margin-bottom:6px;">
+                    <summary style="display:flex; justify-content:space-between; align-items:center; background:#fff; padding:8px 12px; border-radius:6px; border:1px solid #e9ecef; cursor:pointer; transition:background 0.2s;">
+                        <a href="${u}" target="_blank" class="species-link" onclick="event.stopPropagation()">${x.sp} ↗</a>
+                        <span style="display:flex; align-items:center; gap:8px;">
+                            <span class="species-prob ${cls}">${x.prob}%</span>
+                            <span style="font-size:10px; color:#999;">▼</span>
+                        </span>
+                    </summary>
+                    <div style="padding:6px 4px; background:#fafbfc; border-radius:6px; margin-top:2px; max-height:320px; overflow-y:auto;">
+                        <div style="font-size:10px; color:#666; margin-bottom:4px; padding:0 6px;">🟢 тёмно-зелёный — лучший час · 🟢 светло-зелёный — пик клёва (±5%) · 🌙 — ночь</div>${hoursHtml}
+                    </div>
+                </details>`;
+            }).join('');
+
+            const mInfo = getMoonInfo();
+            const pPeriodsHtml = dayP.map(p => {
+                const window = formatWindow(p);
+                const ic = p.type === 'major' ? '🌙' : '🌗';
+                const badge = p.type === 'major' ? '<span style="background:#ffd54f; color:#5d4037; padding:1px 6px; border-radius:4px; font-size:10px; margin-left:5px;">MAJOR</span>' : '<span style="background:#b0bec5; color:#263238; padding:1px 6px; border-radius:4px; font-size:10px; margin-left:5px;">minor</span>';
+                return `<li>${ic} <b>${window}</b> — ${p.label} ${badge}</li>`;
+            }).join('');
+            const dayQuality = dayQ;
+
+            const pTrColor = pTr.trend === 'falling' ? '#28a745' : (pTr.trend === 'rising' ? '#dc3545' : '#666');
+
+            html += `<details class="day-card" ${isOpen}><summary class="day-summary"><span>📅 ${dS} <span style="font-size:13px; color:${dayQuality.color}; margin-left:10px; font-weight:normal;">${dayQuality.stars} ${dayQuality.label} соланар</span></span><span>▼</span></summary><div class="day-content">
+                <div style="text-align:center; padding:22px; margin-bottom:18px; background:linear-gradient(135deg, ${biColor}15, ${biColor}30); border-radius:14px; border:2px solid ${biColor};">
+                    <div style="font-size:13px; color:#555; text-transform:uppercase; letter-spacing:1.5px; margin-bottom:8px; font-weight:bold;">🎯 Индекс клёва (BI)</div>
+                    <div style="font-size:52px; font-weight:900; color:${biColor}; line-height:1;">${biteIndex}<span style="font-size:22px; opacity:0.5;">/100</span></div>
+                    <div style="font-size:16px; color:${biColor}; font-weight:bold; margin-top:6px;">${biLabel}</div>
+                    <div style="font-size:14px; color:#444; margin-top:6px;">⏰ Лучший час: <b style="color:#e74c3c;">${String(peakHourBI).padStart(2,'0')}:00</b> <span style="color:#888;">(${peakValBI}/100)</span></div>
+                    ${biSVG}
+                </div>
+                <div class="weather-grid">
+                    <div class="w-item"><div class="w-label">${tr.pressure}</div><div class="w-value">${pres.toFixed(0)} hPa <span style="font-size:13px; color:${pTrColor}">${pTr.label}</span></div></div>
+                    <div class="w-item"><div class="w-label">${tr.wind}</div><div class="w-value">${wind.toFixed(0)} км/ч, <span style="color:var(--primary)">${wDir}</span></div></div>
+                    <div class="w-item"><div class="w-label">${tr.waterTemp}</div><div class="w-value">${temp.toFixed(1)} °C</div></div>
+                    <div class="w-item" style="background:${getWaveDanger(wave).bg}; border-left-color:${getWaveDanger(wave).color};"><div class="w-label">${tr.wave} ${getWaveDanger(wave).icon}</div><div class="w-value" style="color:${getWaveDanger(wave).color};">${wave.toFixed(1)} м${wPer ? ' / ' + wPer.toFixed(0) + 'с' : ''} <span style="font-size:12px; font-weight:normal; opacity:0.8;">(${getWaveDanger(wave).label})</span></div></div>
+                    <div class="w-item"><div class="w-label">${tr.current}</div><div class="w-value">${cVel !== null && cVel !== undefined ? cVel.toFixed(2) + ' м/с' : '—'}</div></div>
+                    <div class="w-item"><div class="w-label">${tr.cloudCover}</div><div class="w-value">${cloud !== null && cloud !== undefined ? cloud.toFixed(0) + '%' : '—'}</div></div>
+                </div>
+                <div class="tide-summary-line">📅 ${tr.tidesChrono}<br>${sLine}</div>
+                <svg id="tide-chart-day-${d}" viewBox="0 0 900 260" style="width:100%; margin:8px 0; display:block;"></svg>
+                <div class="solunar-block">
+                    <div class="solunar-title">🌛 ${tr.bestHours} — ${dayQuality.stars} <span style="color:${dayQuality.color};">${dayQuality.label}</span></div>
+                    <div style="margin-bottom:10px; font-size:14px;">🌕 ${tr.moon}: <b>${mInfo.name}</b> (${mInfo.pct}%)</div>
+                    <ul>${pPeriodsHtml}</ul>
+                </div>
+                ${tHtml}
+                <div class="prob-box"><div class="prob-title">${tr.topFish}</div>${sHtml}</div>
+            </div></details>`;
+        }
+        document.getElementById('loading').style.display = 'none';
+        document.getElementById('content').innerHTML = html;
+        dayCharts.forEach(function(c) { drawMiniChart(c.tides, c.heights, c.index, c.topFish); });
+    } catch (e) {
+        document.getElementById('loading').innerHTML = '<span style="color:red;">' + tr.error + e.message + '</span>';
+    }
+}
+loadForecast();
+</script>
+</body>
+</html>

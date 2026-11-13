@@ -1,9 +1,47 @@
-﻿backups/
-backup*/
-backup_*/
-_ARCHIVE/
-_ROLLBACK_MAP/
-*.py
+﻿# ============================================================
+# Whitelist: ignore everything by default, then allow specific
+# ============================================================
+
+# Ignore everything in root
+/*
+
+# --- Exceptions (these files WILL be tracked) ---
+
+# Git
+!/.gitignore
+
+# Main HTML pages (карта, справочник, прогноз)
+!/map_rescued.html
+!/catalog_full.html
+!/forecast.html
+!/japan_experience.html
+
+# Data (JS, JSON, GeoJSON)
+!/*.js
+!/*.json
+!/*.geojson
+
+# Launchers
+!/*.bat
+!/*.ps1
+!/*.vbs
+
+# Python entry points (только эти — остальные .py игнорируются)
+!/_spawn.py
+!/app.py
+!/GLOBAL_REBUILD.py
+!/map.py
+
+# Images
+!/images
+!/images/**
+
+# --- Block backups/logs even inside allowed patterns ---
+*.bak*
+*.GOLDEN*
+*.WORKING*
+*.backup*
+*.broken_bak
+*.log
 *.zip
 *.pbf
-*.txt

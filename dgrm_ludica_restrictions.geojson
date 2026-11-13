@@ -1,0 +1,125 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -8.795,
+          37.825
+        ]
+      },
+      "properties": {
+        "name": "Ilha do Pessegueiro (полный запрет)",
+        "type": "restricted_fishing",
+        "description": "Зона ограничения любительской рыбалки (DGRM)"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -8.815,
+          37.595
+        ]
+      },
+      "properties": {
+        "name": "Cabo Sardão (полный запрет)",
+        "type": "restricted_fishing",
+        "description": "Зона ограничения любительской рыбалки (DGRM)"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -8.865,
+          37.295
+        ]
+      },
+      "properties": {
+        "name": "Arrifana (полный запрет)",
+        "type": "restricted_fishing",
+        "description": "Зона ограничения любительской рыбалки (DGRM)"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -8.945,
+          37.015
+        ]
+      },
+      "properties": {
+        "name": "Ilhotes do Martinhal (полный запрет)",
+        "type": "restricted_fishing",
+        "description": "Зона ограничения любительской рыбалки (DGRM)"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -8.615,
+          37.115
+        ]
+      },
+      "properties": {
+        "name": "Pedra da Agulha (100м зона)",
+        "type": "restricted_fishing",
+        "description": "Зона ограничения любительской рыбалки (DGRM)"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -8.655,
+          37.085
+        ]
+      },
+      "properties": {
+        "name": "Pedra da Galé (100м зона)",
+        "type": "restricted_fishing",
+        "description": "Зона ограничения любительской рыбалки (DGRM)"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -8.685,
+          37.075
+        ]
+      },
+      "properties": {
+        "name": "Pedra das Gaivotas (100м зона)",
+        "type": "restricted_fishing",
+        "description": "Зона ограничения любительской рыбалки (DGRM)"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -8.705,
+          37.065
+        ]
+      },
+      "properties": {
+        "name": "Pedra do Gigante (100м зона)",
+        "type": "restricted_fishing",
+        "description": "Зона ограничения любительской рыбалки (DGRM)"
+      }
+    }
+  ]
+}
