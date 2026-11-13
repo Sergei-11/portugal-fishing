@@ -211,16 +211,21 @@ function formatWindow(p) {
 }
 
 function getSolunarScore(periods, currentTime) {
+    let bestScore = 0;
+    let bestLabel = '';
     for (const p of periods) {
         const diff = Math.abs(currentTime - p.start) / (1000 * 60);
-        if (p.type === 'major' && diff < 120) return { score: 30, label: p.label };
-        if (p.type === 'minor' && diff < 60) return { score: 15, label: p.label };
+        if (p.type === 'major' && diff < 120) {
+            if (30 > bestScore) { bestScore = 30; bestLabel = p.label; }
+        } else if (p.type === 'minor' && diff < 60) {
+            if (15 > bestScore) { bestScore = 15; bestLabel = p.label; }
+        }
     }
-    return { score: 0, label: '' };
+    return { score: bestScore, label: bestLabel };
 }
 
-function getMoonInfo() {
-    const m = SunCalc.getMoonIllumination(new Date());
+function getMoonInfo(date) {
+    const m = SunCalc.getMoonIllumination(date || new Date());
     const pct = Math.round(m.fraction * 100);
     let n = 'Растущая';
     if (pct > 90) n = 'Полнолуние'; else if (pct < 10) n = 'Новолуние';
@@ -724,7 +729,7 @@ function getTempAnomaly(temps, currentHour) {
                 const cloud0 = wD.hourly.cloud_cover ? wD.hourly.cloud_cover[idx] : null;
                 const pTr0 = getPressureTrend(wD.hourly.pressure_msl, idx);
                 
-                const score0 = calcProb(sp, pres0, wind0, wDeg0, wave0, temp0, hourlySolunar[hh], wPer0, cVel0, cloud0, pTr0);
+                const score0 = calcProb(sp, pres0, wind0, wDeg0, wave0, temp0, hourlySolunar[hh], wPer0, cVel0, cloud0, pTr0, 0, 0, 0, hh);
                 hourlyScores[hh] = score0;
                 
                 if (score0 > bestScore) { 
@@ -846,7 +851,7 @@ function getTempAnomaly(temps, currentHour) {
                     const cVel0 = mD.hourly.ocean_current_velocity ? mD.hourly.ocean_current_velocity[idx] : null;
                     const cloud0 = wD.hourly.cloud_cover ? wD.hourly.cloud_cover[idx] : null;
                     const pTr0 = getPressureTrend(wD.hourly.pressure_msl, idx);
-                    const score0 = calcProb(sp, pres0, wind0, wDeg0, wave0, temp0, hourlySolunar[hh], wPer0, cVel0, cloud0, pTr0);
+                    const score0 = calcProb(sp, pres0, wind0, wDeg0, wave0, temp0, hourlySolunar[hh], wPer0, cVel0, cloud0, pTr0, 0, 0, 0, hh);
                     if (score0 > bestScore) { bestScore = score0; bestHour = hh; }
                 }
                 // Направление воды в лучший час
@@ -871,7 +876,7 @@ function getTempAnomaly(temps, currentHour) {
                 const pTrH = getPressureTrend(wD.hourly.pressure_msl, idx);
                 let sumBI = 0;
                 for (let i = 0; i < speciesList.length; i++) {
-                    sumBI += calcProb(speciesList[i], presH, windH, wDegH, waveH, tempH, hourlySolunar[h] || 0, wPerH, cVelH, cloudH, pTrH);
+                    sumBI += calcProb(speciesList[i], presH, windH, wDegH, waveH, tempH, hourlySolunar[h] || 0, wPerH, cVelH, cloudH, pTrH, 0, 0, 0, h);
                 }
                 hourlyBI[h] = Math.round(sumBI / speciesList.length);
             }
