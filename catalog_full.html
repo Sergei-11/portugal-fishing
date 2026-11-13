@@ -204,7 +204,7 @@ function renderFish(filterText) {
     var lang = window.currentLang || 'pt';
     var t = translations[lang] || translations['pt'];
 
-    var allowedFish = ["sargo","safia","tainha","boga","robalo","corvina","dourada","linguado","salmonete","safio","xarroco","lula","choco","polvo","sardinha","carapau","cavala","pargo","garoupa"];
+    var allowedFish = ["sargo","safia","tainha","boga","robalo","corvina","dourada","linguado","salmonete","safio","xarroco","lula","choco","polvo","sardinha","carapau","cavala","pargo","garoupa","baila","enguia","parco","pica","rainha","russada","sargueta"];
     Object.keys(FISH_DATA).forEach(function(id) {
         if (!allowedFish.includes(id)) return;
         var f = FISH_DATA[id];
