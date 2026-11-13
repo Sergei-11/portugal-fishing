@@ -1,5 +1,6 @@
 window.FISH_DATA = {
   "sargo": {
+    "habitat": ["sand", "estuary"],
     "name": {
       "ru": "Сарго",
       "pt": "Sargo",
@@ -77,6 +78,7 @@ window.FISH_DATA = {
     "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1e/Diplodus_sargus.jpg/330px-Diplodus_sargus.jpg"
   },
   "robalo": {
+    "habitat": ["estuary", "sand"],
     "name": {
       "ru": "Сибас",
       "pt": "Robalo",
@@ -154,6 +156,7 @@ window.FISH_DATA = {
     "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/45/Dicentrarchus_labrax_1.jpg/330px-Dicentrarchus_labrax_1.jpg"
   },
   "dourada": {
+    "habitat": ["sand", "estuary"],
     "name": {
       "ru": "Дорада",
       "pt": "Dourada",
@@ -231,6 +234,7 @@ window.FISH_DATA = {
     "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9c/Sparus_aurata.jpg/330px-Sparus_aurata.jpg"
   },
   "safia": {
+    "habitat": ["estuary", "rock"],
     "name": {
       "ru": "Сафия",
       "pt": "Safia",
@@ -308,6 +312,7 @@ window.FISH_DATA = {
     "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1e/Diplodus_sargus.jpg/330px-Diplodus_sargus.jpg"
   },
   "corvina": {
+    "habitat": ["estuary", "sand"],
     "name": {
       "ru": "Корвина",
       "pt": "Corvina",
@@ -385,6 +390,7 @@ window.FISH_DATA = {
     "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3e/Argyrosomus_regius.jpg/330px-Argyrosomus_regius.jpg"
   },
   "polvo": {
+    "habitat": ["rock"],
     "name": {
       "ru": "Осьминог",
       "pt": "Polvo",
@@ -462,6 +468,7 @@ window.FISH_DATA = {
     "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0a/Octopus_vulgaris_2.jpg/330px-Octopus_vulgaris_2.jpg"
   },
   "safio": {
+    "habitat": ["rock", "estuary"],
     "name": {
       "ru": "Сафио",
       "pt": "Safio",
@@ -539,6 +546,7 @@ window.FISH_DATA = {
     "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0a/Conger_conger_2.jpg/330px-Conger_conger_2.jpg"
   },
   "linguado": {
+    "habitat": ["sand"],
     "name": {
       "ru": "Лингваду",
       "pt": "Linguado",
@@ -616,6 +624,7 @@ window.FISH_DATA = {
     "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1a/Solea_solea_1.jpg/330px-Solea_solea_1.jpg"
   },
   "lula": {
+    "habitat": ["sand", "rock"],
     "name": {
       "ru": "Кальмар",
       "pt": "Lula",
@@ -693,6 +702,7 @@ window.FISH_DATA = {
     "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0e/Loligo_vulgaris.jpg/330px-Loligo_vulgaris.jpg"
   },
   "choco": {
+    "habitat": ["sand"],
     "name": {
       "ru": "Каракатица",
       "pt": "Choco",
@@ -770,6 +780,7 @@ window.FISH_DATA = {
     "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0e/Sepia_officinalis_1.jpg/330px-Sepia_officinalis_1.jpg"
   },
   "sardinha": {
+    "habitat": ["open_sea"],
     "name": {
       "ru": "Сардина",
       "pt": "Sardinha",
@@ -847,6 +858,7 @@ window.FISH_DATA = {
     "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1a/Sardina_pilchardus_Sardinia_1.JPG/330px-Sardina_pilchardus_Sardinia_1.JPG"
   },
   "cavala": {
+    "habitat": ["open_sea"],
     "name": {
       "ru": "Скумбрия",
       "pt": "Cavala",
@@ -924,6 +936,7 @@ window.FISH_DATA = {
     "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0e/Scomber_scombrus_6_-_2011.02.04.jpg/330px-Scomber_scombrus_6_-_2011.02.04.jpg"
   },
   "carapau": {
+    "habitat": ["open_sea", "sand"],
     "name": {
       "ru": "Ставрида",
       "pt": "Carapau",
@@ -1001,6 +1014,7 @@ window.FISH_DATA = {
     "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1a/Atlantic_Horse_Mackerel.jpg/330px-Atlantic_Horse_Mackerel.jpg"
   },
   "tainha": {
+    "habitat": ["estuary", "sand"],
     "name": {
       "ru": "Кефаль",
       "pt": "Tainha",
@@ -1078,6 +1092,7 @@ window.FISH_DATA = {
     "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1a/Muble_%28Chelon_labrosus%29%2C_Parque_natural_de_la_Arr%C3%A1bida%2C_Portugal%2C_2021-09-10%2C_DD_48.jpg/330px-Muble_%28Chelon_labrosus%29%2C_Parque_natural_de_la_Arr%C3%A1bida%2C_Portugal%2C_2021-09-10%2C_DD_48.jpg"
   },
   "pargo": {
+    "habitat": ["rock", "deep"],
     "name": {
       "ru": "Пагрус",
       "pt": "Pargo",
@@ -1155,6 +1170,7 @@ window.FISH_DATA = {
     "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e0/Pargo_com%C3%BAn_%28Pagrus_pagrus%29%2C_Parque_natural_de_la_Arr%C3%A1bida%2C_Portugal%2C_2021-09-09%2C_DD_36.jpg/330px-Pargo_com%C3%BAn_%28Pagrus_pagrus%29%2C_Parque_natural_de_la_Arr%C3%A1bida%2C_Portugal%2C_2021-09-09%2C_DD_36.jpg"
   },
   "garoupa": {
+    "habitat": ["rock", "deep"],
     "name": {
       "ru": "Гарупа",
       "pt": "Garoupa",
@@ -1232,6 +1248,7 @@ window.FISH_DATA = {
     "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1e/Epinephelus_marginatus_%28Lowe%2C_1834%29_1.jpg/330px-Epinephelus_marginatus_%28Lowe%2C_1834%29_1.jpg"
   },
   "salmonete": {
+    "habitat": ["sand", "rock"],
     "name": {
       "ru": "Барабулька",
       "pt": "Salmonete",
@@ -1309,6 +1326,7 @@ window.FISH_DATA = {
     "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1e/Mullus_surmuletus.jpg/330px-Mullus_surmuletus.jpg"
   },
   "boga": {
+    "habitat": ["estuary", "sand"],
     "name": {
       "ru": "Бога",
       "pt": "Boga",
@@ -1386,6 +1404,7 @@ window.FISH_DATA = {
     "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0e/Boops_boops_Karpathos_01.JPG/330px-Boops_boops_Karpathos_01.JPG"
   },
   "xarroco": {
+    "habitat": ["rock"],
     "name": {
       "ru": "Ксолроко",
       "pt": "Xarroco",
@@ -1603,6 +1622,7 @@ window.FISH_DATA = {
     }
   },
   "pica": {
+    "habitat": ["rock"],
     "name": {
       "ru": "Пика (Конгер)",
       "pt": "Pica",
@@ -1673,6 +1693,7 @@ window.FISH_DATA = {
     }
   },
   "enguia": {
+    "habitat": ["estuary", "mud"],
     "name": {
       "ru": "Угорь",
       "pt": "Enguia",
@@ -1743,6 +1764,7 @@ window.FISH_DATA = {
     }
   },
   "rainha": {
+    "habitat": ["rock"],
     "name": {
       "ru": "Райня (Горбыль)",
       "pt": "Rainha",
@@ -1883,6 +1905,7 @@ window.FISH_DATA = {
     }
   },
   "baila": {
+    "habitat": ["estuary", "sand"],
     "name": {
       "ru": "Байла (Пятнистый лаврак)",
       "pt": "Baila",
@@ -1953,6 +1976,7 @@ window.FISH_DATA = {
     }
   },
   "sargueta": {
+    "habitat": ["sand", "rock"],
     "name": {
       "ru": "Саргета (Мелкий сарго)",
       "pt": "Sargueta",
@@ -2093,6 +2117,7 @@ window.FISH_DATA = {
     }
   },
   "parco": {
+    "habitat": ["estuary"],
     "name": {
       "ru": "Парко (Меро)",
       "pt": "Parco",
@@ -2163,6 +2188,7 @@ window.FISH_DATA = {
     }
   },
   "russada": {
+    "habitat": ["sand", "rock"],
     "name": {
       "ru": "Руссада",
       "pt": "Russada",
