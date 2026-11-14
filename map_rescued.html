@@ -256,7 +256,46 @@
         // Слой pesca-pt.com (зелёные маркеры)
         var pescaPtLayer = L.geoJSON(pescaPtData, {
             pointToLayer: function(feature, latlng) {
-                return L.marker(latlng, { icon: L.divIcon({ className: 'custom-bobber', html: '<div class="bobber-icon-container"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 32" width="40" height="52"><line x1="12" y1="2" x2="12" y2="10" stroke="#2c3e50" stroke-width="3" stroke-linecap="round"/><path d="M 6 16 Q 12 28 18 16 Z" fill="#ffffff" stroke="#dcdcdc" stroke-width="1.5"/><ellipse cx="12" cy="16" rx="7" ry="7" fill="#ff4757"/><ellipse cx="9" cy="14" rx="2" ry="3.5" fill="#ffa502" transform="rotate(-30 9 14)"/></svg></div>', iconSize: [40, 52], iconAnchor: [20, 50] }) });
+                return L.marker(latlng, { icon: L.divIcon({ className: 'custom-bobber', html: '<div class="bobber-icon-container"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 32" width="40" height="52"><line x1="12" y1="2" x2="12" y2="10" stroke="#2c3e50" stroke-width="3" stroke-linecap="round"/><path d="M 6 16 Q 12 28 18 16 Z" fill="#ffffff" stroke="#dcdcdc" stroke-width="1.5"/><ellipse cx="12" cy="16" rx="7" ry="7" fill="#ff4757"/><ellipse cx="9" cy="14" rx="2" ry="3.5" fill="#ffa502" transform="rotate(-30 9 14)"/></svg></div>', iconSize: [40, 52], iconAnchor: [20, 46] }) });
+
+// ??????? ??? ????????????? ??????? ?????? ? ??????????? ?? ????
+function getBobberConfig(zoom) {
+    var scale = 1;
+    if (zoom <= 11) scale = 0.5;      // ?????? ????????
+    else if (zoom === 12) scale = 0.7; // ??????
+    else if (zoom === 13) scale = 0.85; // ???? ?????? ????????
+    // ??? 14+ = ?????? ?????? (1.0)
+    
+    var w = Math.round(40 * scale);
+    var h = Math.round(52 * scale);
+    // ?????????? ????? (46/52 ?? ??????)
+    var anchorY = Math.round((46 / 52) * h); 
+    return { size: [w, h], anchor: [Math.round(w/2), anchorY] };
+}
+
+// ????????? ??????????????? ??? ????????? ????
+if (window.map) {
+    window.map.on('zoomend', function() {
+        var z = window.map.getZoom();
+        var conf = getBobberConfig(z);
+        
+        // ????????? ??? ??????? ? ???? pescaPtLayer
+        if (typeof pescaPtLayer !== 'undefined') {
+            pescaPtLayer.eachLayer(function(layer) {
+                if (layer.setIcon) {
+                    // ????????? ?????? ? ????? ? ???????????? ??????
+                    var icon = layer.options.icon;
+                    if (icon && icon.options.className === 'custom-bobber') {
+                        icon.options.iconSize = conf.size;
+                        icon.options.iconAnchor = conf.anchor;
+                        layer.setIcon(icon);
+                    }
+                }
+            });
+        }
+    });
+}
+
             },
             onEachFeature: function(feature, layer) {
                 var name = feature.properties.name;
@@ -302,7 +341,7 @@
         // FPPD (фиолетовые маркеры)
         var fppdLayer = L.geoJSON(fppdData, {
             pointToLayer: function(feature, latlng) {
-                return L.marker(latlng, { icon: L.divIcon({ className: 'custom-bobber', html: '<div class="bobber-icon-container"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 32" width="40" height="52"><line x1="12" y1="2" x2="12" y2="10" stroke="#2c3e50" stroke-width="3" stroke-linecap="round"/><path d="M 6 16 Q 12 28 18 16 Z" fill="#ffffff" stroke="#dcdcdc" stroke-width="1.5"/><ellipse cx="12" cy="16" rx="7" ry="7" fill="#3498db"/><ellipse cx="9" cy="14" rx="2" ry="3.5" fill="#e67e22" transform="rotate(-30 9 14)"/></svg></div>', iconSize: [40, 52], iconAnchor: [20, 50] }) });
+                return L.marker(latlng, { icon: L.divIcon({ className: 'custom-bobber', html: '<div class="bobber-icon-container"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 32" width="40" height="52"><line x1="12" y1="2" x2="12" y2="10" stroke="#2c3e50" stroke-width="3" stroke-linecap="round"/><path d="M 6 16 Q 12 28 18 16 Z" fill="#ffffff" stroke="#dcdcdc" stroke-width="1.5"/><ellipse cx="12" cy="16" rx="7" ry="7" fill="#3498db"/><ellipse cx="9" cy="14" rx="2" ry="3.5" fill="#e67e22" transform="rotate(-30 9 14)"/></svg></div>', iconSize: [40, 52], iconAnchor: [20, 46] }) });
             },
             onEachFeature: function(feature, layer) {
                 var name = feature.properties.name || "Точка";
@@ -351635,7 +351674,7 @@ document.addEventListener("DOMContentLoaded", function() {
 };
             var directLayer = L.geoJSON(directData, {
                 pointToLayer: function(feature, latlng) {
-                return L.marker(latlng, { icon: L.divIcon({ className: 'custom-bobber', html: '<div class="bobber-icon-container"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 32" width="40" height="52"><line x1="12" y1="2" x2="12" y2="10" stroke="#2c3e50" stroke-width="3" stroke-linecap="round"/><path d="M 6 16 Q 12 28 18 16 Z" fill="#ffffff" stroke="#dcdcdc" stroke-width="1.5"/><ellipse cx="12" cy="16" rx="7" ry="7" fill="#f1c40f"/><ellipse cx="9" cy="14" rx="2" ry="3.5" fill="#e67e22" transform="rotate(-30 9 14)"/></svg></div>', iconSize: [40, 52], iconAnchor: [20, 50] }) });
+                return L.marker(latlng, { icon: L.divIcon({ className: 'custom-bobber', html: '<div class="bobber-icon-container"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 32" width="40" height="52"><line x1="12" y1="2" x2="12" y2="10" stroke="#2c3e50" stroke-width="3" stroke-linecap="round"/><path d="M 6 16 Q 12 28 18 16 Z" fill="#ffffff" stroke="#dcdcdc" stroke-width="1.5"/><ellipse cx="12" cy="16" rx="7" ry="7" fill="#f1c40f"/><ellipse cx="9" cy="14" rx="2" ry="3.5" fill="#e67e22" transform="rotate(-30 9 14)"/></svg></div>', iconSize: [40, 52], iconAnchor: [20, 46] }) });
             },
                 onEachFeature: function(feature, layer) {
                     var name = feature.properties.name || "Точка";
@@ -352310,4 +352349,32 @@ window.addEventListener('load', function() {
 
 
 
+
+<script>
+// === ?????????? ?????? ??? ??????????? (?????????????) ===
+document.addEventListener('DOMContentLoaded', function() {
+    setTimeout(function() {
+        var mapInstance = window.map || (typeof map !== 'undefined' ? map : null);
+        if (mapInstance) {
+            mapInstance.on('zoomend', function() {
+                var z = mapInstance.getZoom();
+                mapInstance.eachLayer(function(layer) {
+                    // ?????????, ???????? ?? ???? ????????? ??? ???????????????
+                    if (layer instanceof L.Polygon || layer instanceof L.Rectangle) {
+                        if (z >= 13) {
+                            layer.setStyle({ fillOpacity: 0 });      // ??????: ????????? ?????????
+                        } else if (z >= 11) {
+                            layer.setStyle({ fillOpacity: 0.05 });   // ??????: ????? ?? ?????
+                        } else {
+                            layer.setStyle({ fillOpacity: 0.2 });    // ??????: ????? ??? ??????
+                        }
+                    }
+                });
+            });
+            // ????????? ????? ??? ????????
+            mapInstance.fire('zoomend'); 
+        }
+    }, 1000); // ???? 1 ???, ????? ????? ????? ???????????
+});
+</script>
 </body></html>

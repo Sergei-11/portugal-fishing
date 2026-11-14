@@ -784,7 +784,7 @@ function getTempAnomaly(temps, currentHour) {
                     timeStr = startStr + '–' + String(pStart + 1).padStart(2, '0') + ':00';
                 }
 
-                return `<div style="display:inline-block; margin:5px 8px; padding:8px 14px; background:#fff; border-radius:8px; border-left:4px solid ${borderColor}; box-shadow:0 2px 6px rgba(0,0,0,0.08);"><b>${f.name}</b> — <b>${timeStr}</b> <span style="color:${borderColor};">${arrow}</span> <span style="color:#28a745; font-weight:bold;">(${f.prob}%)</span></div>`;
+                return `<div data-fish="${f.name.toLowerCase().trim()}" style="display:inline-block; margin:5px 8px; padding:8px 14px; background:#fff; border-radius:8px; border-left:4px solid ${borderColor}; box-shadow:0 2px 6px rgba(0,0,0,0.08);"><b>${f.name}</b> — <b>${timeStr}</b> <span style="color:${borderColor};">${arrow}</span> <span style="color:#28a745; font-weight:bold;">(${f.prob}%)</span></div>`;
             }).join('');
         }
 
@@ -954,7 +954,7 @@ function getTempAnomaly(temps, currentHour) {
 
                 const u = `catalog_full.html?q=${encodeURIComponent(x.sp)}`;
                 const cls = x.prob >= 75 ? '' : (x.prob >= 60 ? 'low' : 'verylow');
-                return `<details class="species-details" style="margin-bottom:6px;">
+                return `<details data-fish="${x.sp.toLowerCase().trim()}" class="species-details" style="margin-bottom:6px;">
                     <summary style="display:flex; justify-content:space-between; align-items:center; background:#fff; padding:8px 12px; border-radius:6px; border:1px solid #e9ecef; cursor:pointer; transition:background 0.2s;">
                         <a href="${u}" target="_blank" class="species-link" onclick="event.stopPropagation()">${x.sp} ↗</a>
                         <span style="display:flex; align-items:center; gap:8px;">
@@ -1129,5 +1129,6 @@ window.addEventListener('load', function() {
     }
 });
 </script>
+<script src="filter.js"></script>
 </body>
 </html>
